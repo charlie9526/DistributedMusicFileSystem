@@ -18,14 +18,14 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class NodeOpsUDP implements NodeOperations, Runnable {
+public class NodeOperator implements NodeOperations, Runnable {
 
     private Node node;
     private Credential bootstrapServerCredential;
     private DatagramSocket socket;
     private boolean regOk = false;
 
-    public NodeOpsUDP(Credential bootstrapServerCredential, Credential nodeCredential) {
+    public NodeOperator(Credential bootstrapServerCredential, Credential nodeCredential) {
         this.bootstrapServerCredential = bootstrapServerCredential;
 
         this.node = new Node();

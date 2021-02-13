@@ -1,12 +1,13 @@
-package ds.controller;
+package ds.programme;
 
 import ds.communication.request.SearchRequest;
 import ds.constant.Constant;
+import ds.controller.NodeOperator;
 import ds.credential.Credential;
 
 import java.util.*;
 
-public class BootstrapNode {
+public class DSProgramme {
 
     public static void main(String[] args) {
 
@@ -33,21 +34,21 @@ public class BootstrapNode {
         Credential nodeCredential = new Credential(nodeIp, nodePort, nodeUsername);
 
         // Initiate the thread for UDP connection
-        NodeOpsUDP nodeOpsUDP = new NodeOpsUDP(bootstrapServerCredential, nodeCredential);
+        NodeOperator nodeOperator = new NodeOperator(bootstrapServerCredential, nodeCredential);
 
         // Register in network
-        nodeOpsUDP.register();
+        nodeOperator.register();
         while (true) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (nodeOpsUDP.isRegOk()) {
+            if (nodeOperator.isRegOk()) {
                 for (int i = 0; i < searchQueries.size(); i++) {
                     searchQueryTable.put(i, searchQueries.get(i));
-                    SearchRequest searchRequest = new SearchRequest(1, nodeOpsUDP.getNode().getCredential(), searchQueryTable.get(i), 0);
-                    nodeOpsUDP.triggerSearchRequest(searchRequest);
+                    SearchRequest searchRequest = new SearchRequest(1, nodeOperator.getNode().getCredential(), searchQueryTable.get(i), 0);
+                    nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {
