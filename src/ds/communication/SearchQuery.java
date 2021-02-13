@@ -1,15 +1,15 @@
 package ds.communication;
 
 public class SearchQuery {
-    private int ID;
+    private String  ID;
     private String queryFileNameString;
 
-    public SearchQuery(int ID, String queryFileNameString) {
+    public SearchQuery(String ID, String queryFileNameString) {
         this.ID = ID;
         this.queryFileNameString = queryFileNameString;
     }
 
-    public int getID() {
+    public String getID() {
         return ID;
     }
 

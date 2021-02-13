@@ -1,5 +1,6 @@
 package ds.programme;
 
+import ds.communication.SearchQuery;
 import ds.communication.request.SearchRequest;
 import ds.constant.Constant;
 import ds.controller.NodeOperator;
@@ -41,6 +42,7 @@ public class DSProgramme {
 
 //        Register in network
         nodeRegistrar.register();
+
         while (true) {
             try {
                 Thread.sleep(1000);
@@ -49,8 +51,9 @@ public class DSProgramme {
             }
             if (nodeOperator.isRegOk()) {
                 for (int i = 0; i < searchQueries.size(); i++) {
-                    searchQueryTable.put(i, searchQueries.get(i));
-                    SearchRequest searchRequest = new SearchRequest(1, nodeOperator.getNode().getCredential(), searchQueryTable.get(i), 0);
+                    String uuid = UUID.randomUUID().toString();
+                    nodeOperator.getNode().addSearchQuery(new SearchQuery(uuid,searchQueries.get(i)));
+                    SearchRequest searchRequest = new SearchRequest(1, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);

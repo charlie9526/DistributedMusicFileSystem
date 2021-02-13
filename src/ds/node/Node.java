@@ -5,6 +5,7 @@ import ds.credential.Credential;
 import ds.history.StatRecord;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +15,9 @@ public class Node {
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
+    private HashMap<String,SearchQuery> queryDetailsTable = new HashMap<>();
     private Map<String, Credential> queryRoutingTable;
-    private ArrayList<SearchQuery> queryDetailsTable;
+
 
     public Credential getCredential() {
         return credential;
@@ -63,9 +65,11 @@ public class Node {
 
     public void setStatTable(List<StatRecord> statTable) {this.statTable = statTable;}
 
-    public ArrayList<SearchQuery> getQueryDetailsTable(){return this.queryDetailsTable;}
+    public HashMap<String,SearchQuery> getQueryDetailsTable(){return this.queryDetailsTable;}
 
-    public void putSearchQuery(SearchQuery searchQuery){ this.queryDetailsTable.add(searchQuery); }
+    public void addSearchQuery(SearchQuery searchQuery){ this.queryDetailsTable.put(searchQuery.getID(),searchQuery); }
 
-    public void removeSearchQuery(SearchQuery searchQuery){ queryDetailsTable.remove(searchQuery); }
+    public void removeSearchQuery(int searchQueryID){ queryDetailsTable.remove(searchQueryID); }
+
+    public SearchQuery getSearchQueryByID(String ID){ return this.queryDetailsTable.get(ID);}
 }
