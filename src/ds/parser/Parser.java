@@ -20,6 +20,9 @@ public class Parser {
 
         String length = st.nextToken();
         String command = st.nextToken();
+        System.out.println(length+"===length");
+        System.out.println(message);
+        System.out.println(command+"====comamnd");
 
         if (command.equals(Constant.commandConstants.get("REG"))) {
             String ip = st.nextToken();
@@ -75,7 +78,7 @@ public class Parser {
             return new LeaveResponse(value);
 
         } else if (command.equals(Constant.commandConstants.get("SEARCH"))) {
-            int seqNum = Integer.parseInt(st.nextToken());
+            String seqNum = st.nextToken();
             String ip = st.nextToken();
             int port = Integer.parseInt(st.nextToken());
             String fileName = st.nextToken();
@@ -84,7 +87,7 @@ public class Parser {
             return new SearchRequest(seqNum, crd, fileName, hops);
 
         } else if (command.equals(Constant.commandConstants.get("SEARCHOK"))) {
-            int sequenceNo = Integer.parseInt(st.nextToken());
+            String sequenceNo = st.nextToken();
             int numOfFiles = Integer.parseInt(st.nextToken());
             String ip = st.nextToken();
             int port = Integer.parseInt(st.nextToken());

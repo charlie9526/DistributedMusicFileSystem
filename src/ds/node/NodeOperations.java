@@ -19,13 +19,11 @@ public interface NodeOperations {
 
     void search(SearchRequest searchRequest, Credential sendCredential);
 
-    void searchOk(SearchResponse searchResponse);
+    void searchOk(SearchResponse searchResponse,Credential recieverCredentials);
 
     void processResponse(Message response);
 
     void error(Credential senderCredential);
-
-    boolean isRegOk();
 
     List<String> checkForFiles(String fileName, List<String> fileList);
 

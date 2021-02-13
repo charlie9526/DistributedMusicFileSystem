@@ -5,13 +5,13 @@ import ds.communication.Message;
 import ds.credential.Credential;
 public class SearchResponse extends Message {
 
-    private int sequenceNo;
+    private String sequenceNo;
     private int noOfFiles;
     private Credential credential;
     private int hops;
     private List<String> fileList;
 
-    public SearchResponse(int sequenceNo, int noOfFiles, Credential credential, int hops, List<String> fileList) {
+    public SearchResponse(String sequenceNo, int noOfFiles, Credential credential, int hops, List<String> fileList) {
         this.sequenceNo = sequenceNo;
         this.noOfFiles = noOfFiles;
         this.credential = credential;
@@ -35,11 +35,11 @@ public class SearchResponse extends Message {
         this.credential = credential;
     }
 
-    public int getSequenceNo() {
+    public String getSequenceNo() {
         return sequenceNo;
     }
 
-    public void setSequenceNo(int sequenceNo) {
+    public void setSequenceNo(String sequenceNo) {
         this.sequenceNo = sequenceNo;
     }
 

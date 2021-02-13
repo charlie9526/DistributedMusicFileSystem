@@ -22,7 +22,6 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     private Node node;
     private DatagramSocket socket;
-    private boolean regOk = false;
     private NodeRegistrar nodeRegistrar;
 
     public NodeOperator(Credential nodeCredential,NodeRegistrar nodeRegistrar) {
@@ -34,7 +33,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     public Node getNode() {
         return node;
     }
-
+    public NodeRegistrar getNodeRegistrar(){return this.nodeRegistrar;}
     @Override
     public void run() {
         System.out.println("Server " + this.node.getCredential().getUsername() + " created at " + this.node.getCredential().getPort() + ". Waiting for incoming data...");
@@ -117,10 +116,10 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public void searchOk(SearchResponse searchResponse) {
+    public void searchOk(SearchResponse searchResponse,Credential recieverCredintials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(searchResponse.getCredential().getIp()), searchResponse.getCredential().getPort()));
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(recieverCredintials.getIp()), recieverCredintials.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -166,7 +165,7 @@ public class NodeOperator implements NodeOperations, Runnable {
                 printRoutingTable(routingTable);
                 //TODO: check whether the received nodes are alive before adding to routing table
                 this.node.setRoutingTable(routingTable);
-                this.regOk = true;
+                this.nodeRegistrar.setRegOK(true);
             }
 
         } else if (response instanceof UnregisterResponse) {
@@ -174,7 +173,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             node.setRoutingTable(new ArrayList<>());
             node.setFileList(new ArrayList<>());
             node.setStatTable(new ArrayList<>());
-            this.regOk = false;
+            this.nodeRegistrar.setRegOK(false);
 
         } else if (response instanceof SearchRequest) {
             SearchRequest searchRequest = (SearchRequest) response;
@@ -188,6 +187,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
+                node.removeSearchQuery(searchResponse.getSequenceNo());
                 System.out.println("--------------------------------------------------------");
                 System.out.println(searchResponse.toString());
                 System.out.println("--------------------------------------------------------");
@@ -218,11 +218,6 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public boolean isRegOk() {
-        return regOk;
-    }
-
-    @Override
     public List<String> checkForFiles(String fileName, List<String> fileList) {
         Pattern pattern = Pattern.compile(fileName);
         return fileList.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
@@ -245,14 +240,13 @@ public class NodeOperator implements NodeOperations, Runnable {
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), searchRequest.getCredential(), searchRequest.getHops(), searchResult);
+            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult);
             if (searchRequest.getCredential().getIp() == node.getCredential().getIp() && searchRequest.getCredential().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
                 System.out.println("Send SEARCHOK response message");
-                searchOk(searchResponse);
+                searchOk(searchResponse,searchRequest.getCredential());
             }
-
         } else {
             //TODO:check cache table to check whether record is there for the searching file 
             System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());

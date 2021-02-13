@@ -20,6 +20,7 @@ public class NodeRegistrar {
     private Node node;
     private Credential bootstrapServerCredential;
     private DatagramSocket socket;
+    private Boolean regOK = false;
 
     public DatagramSocket getSocket() {
         return socket;
@@ -66,6 +67,14 @@ public class NodeRegistrar {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isRegOK() {
+        return this.regOK;
+    }
+
+    public void setRegOK(Boolean bool){
+        this.regOK = bool;
     }
 
     public List<String> createFileList() {

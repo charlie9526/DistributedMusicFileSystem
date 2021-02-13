@@ -28,7 +28,7 @@ public class DSProgramme {
         Credential bootstrapServerCredential = new Credential(bootstrapIp, Constant.portConstants.get("PORT_BOOTSTRAP_SERVER"), Constant.usernameConstants.get("USERNAME_BOOTSTRAP_SERVER"));
         Map<Integer, String> searchQueryTable = new HashMap<>();
 
-        List<String> searchQueries = Arrays.asList("Twilight", "Jack", "American_Idol", "Happy_Feet", "Twilight_saga", "Happy_Feet", "Feet");
+        List<String> searchQueries = Arrays.asList("Adventures_of_Tintin", "Harry_Potter");
         Collections.shuffle(searchQueries);
 
 //        Generate self credentials
@@ -49,11 +49,12 @@ public class DSProgramme {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (nodeOperator.isRegOk()) {
+            if (nodeOperator.getNodeRegistrar().isRegOK()) {
                 for (int i = 0; i < searchQueries.size(); i++) {
+                    System.out.println(searchQueries.get(i));
                     String uuid = UUID.randomUUID().toString();
                     nodeOperator.getNode().addSearchQuery(new SearchQuery(uuid,searchQueries.get(i)));
-                    SearchRequest searchRequest = new SearchRequest(1, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
+                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);
