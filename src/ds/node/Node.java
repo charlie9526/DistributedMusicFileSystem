@@ -14,27 +14,27 @@ public class Node {
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
-    private Map<String, Credential> queryTable;
+    private Map<String, Credential> queryRoutingTable;
     private ArrayList<SearchQuery> queryDetailsTable;
 
     public Credential getCredential() {
         return credential;
     }
 
-    public Map<String, Credential> getQueryTable() {
-        return queryTable;
+    public Map<String, Credential> getQueryRoutingTable() {
+        return queryRoutingTable;
     }
 
-    public void setQueryTable(Map<String, Credential> queryTable) {
-        this.queryTable = queryTable;
+    public void setQueryRoutingTable(Map<String, Credential> queryRoutingTable) {
+        this.queryRoutingTable = queryRoutingTable;
     }
 
     public void addQueryRecord(String queryId, Credential from) {
-        this.queryTable.put(queryId, from);
+        this.queryRoutingTable.put(queryId, from);
     }
 
     public void removeQueryRecord(String queryId, Credential from) {
-        this.queryTable.remove(queryId);
+        this.queryRoutingTable.remove(queryId);
     }
 
     public void setCredential(Credential credential) {
