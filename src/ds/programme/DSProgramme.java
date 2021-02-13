@@ -34,7 +34,7 @@ public class DSProgramme {
 //        Generate self credentials
         Credential nodeCredential = new Credential(nodeIp, nodePort, nodeUsername);
 
-//        Register the node with oostrap
+//        Register the node with bootstrap
         NodeRegistrar nodeRegistrar = new NodeRegistrar(bootstrapServerCredential,nodeCredential);
 
 //        Initiate the thread for UDP connection

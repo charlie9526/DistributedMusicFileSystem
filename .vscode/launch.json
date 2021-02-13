@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch DSProgramme",
+            "request": "launch",
+            "mainClass": "ds.programme.DSProgramme",
+            "projectName": "DistributedMusicFileSystem_42023b7a",
+            "args": "-bi 192.168.1.1 -bp 55555 -bu Boostrap -ni 10.10.0.1 -np 44444 -nu node1"
+        }
+    ]
+}

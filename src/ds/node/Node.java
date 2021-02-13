@@ -7,6 +7,7 @@ import ds.history.StatRecord;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Node {
 
@@ -15,9 +16,27 @@ public class Node {
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
     private HashMap<String,SearchQuery> queryDetailsTable = new HashMap<>();
+    private Map<String, Credential> queryTable;
+
 
     public Credential getCredential() {
         return credential;
+    }
+
+    public Map<String, Credential> getQueryTable() {
+        return queryTable;
+    }
+
+    public void setQueryTable(Map<String, Credential> queryTable) {
+        this.queryTable = queryTable;
+    }
+
+    public void addQueryRecord(String queryId, Credential from) {
+        this.queryTable.put(queryId, from);
+    }
+
+    public void removeQueryRecord(String queryId, Credential from) {
+        this.queryTable.remove(queryId);
     }
 
     public void setCredential(Credential credential) {
