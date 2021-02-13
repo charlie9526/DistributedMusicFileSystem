@@ -48,7 +48,7 @@ public class NodeRegistrar {
 
     public void register() {
         RegisterRequest registerRequest = new RegisterRequest(node.getCredential());
-        String msg = registerRequest.getMessageAsString(Constant.Command.REG);
+        String msg = registerRequest.getMessageAsString(Constant.commandConstants.get("REG"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
@@ -59,7 +59,7 @@ public class NodeRegistrar {
 
     public void unRegister() {
         UnregisterRequest unregisterRequest = new UnregisterRequest(node.getCredential());
-        String msg = unregisterRequest.getMessageAsString(Constant.Command.UNREG);
+        String msg = unregisterRequest.getMessageAsString(Constant.commandConstants.get("UNREG"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));

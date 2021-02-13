@@ -65,7 +65,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void join(Credential neighbourCredential) {
         JoinRequest joinRequest = new JoinRequest(node.getCredential());
-        String msg = joinRequest.getMessageAsString(Constant.Command.JOIN);
+        String msg = joinRequest.getMessageAsString(Constant.commandConstants.get("JOIN"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(neighbourCredential.getIp()), neighbourCredential.getPort()));
         } catch (IOException e) {
@@ -76,7 +76,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void joinOk(Credential senderCredential) {
         JoinResponse joinResponse = new JoinResponse(0, node.getCredential());
-        String msg = joinResponse.getMessageAsString(Constant.Command.JOINOK);
+        String msg = joinResponse.getMessageAsString(Constant.commandConstants.get("JOINOK"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(senderCredential.getIp()), senderCredential.getPort()));
         } catch (IOException e) {
@@ -87,7 +87,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void leave(Credential neighbourCredential) {
         LeaveRequest leaveRequest = new LeaveRequest(node.getCredential());
-        String msg = leaveRequest.getMessageAsString(Constant.Command.LEAVE);
+        String msg = leaveRequest.getMessageAsString(Constant.commandConstants.get("LEAVE"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(neighbourCredential.getIp()), neighbourCredential.getPort()));
         } catch (IOException e) {
@@ -98,7 +98,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void leaveOk(Credential senderCredentials) {
         LeaveResponse leaveResponse = new LeaveResponse(0);
-        String msg = leaveResponse.getMessageAsString(Constant.Command.LEAVEOK);
+        String msg = leaveResponse.getMessageAsString(Constant.commandConstants.get("LEAVEOK"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(senderCredentials.getIp()), senderCredentials.getPort()));
         } catch (IOException e) {
@@ -108,7 +108,7 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     @Override
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
-        String msg = searchRequest.getMessageAsString(Constant.Command.SEARCH);
+        String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
         } catch (IOException e) {
@@ -118,7 +118,7 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     @Override
     public void searchOk(SearchResponse searchResponse) {
-        String msg = searchResponse.getMessageAsString(Constant.Command.SEARCHOK);
+        String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(searchResponse.getCredential().getIp()), searchResponse.getCredential().getPort()));
         } catch (IOException e) {
@@ -129,7 +129,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void error(Credential senderCredential) {
         ErrorResponse errorResponse = new ErrorResponse();
-        String msg = errorResponse.getMessageAsString(Constant.Command.ERROR);
+        String msg = errorResponse.getMessageAsString(Constant.commandConstants.get("ERROR"));
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(senderCredential.getIp()), senderCredential.getPort()));
         } catch (IOException e) {
@@ -141,21 +141,21 @@ public class NodeOperator implements NodeOperations, Runnable {
     public void processResponse(Message response) {
         if (response instanceof RegisterResponse) {
             RegisterResponse registerResponse = (RegisterResponse) response;
-            if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_ALREADY_REGISTERED) {
+            if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_ALREADY_REGISTERED")) {
                 System.out.println("Already registered at Bootstrap with same username");
                 Credential credential = node.getCredential();
                 credential.setUsername(UUID.randomUUID().toString());
                 node.setCredential(credential);
                 nodeRegistrar.register();
-            } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_DUPLICATE_IP) {
+            } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_DUPLICATE_IP")) {
                 System.out.println("Already registered at Bootstrap with same port");
                 Credential credential = node.getCredential();
                 credential.setPort(credential.getPort() + 1);
                 node.setCredential(credential);
                 nodeRegistrar.register();
-            } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_CANNOT_REGISTER) {
+            } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_CANNOT_REGISTER")) {
                 System.out.printf("Can’t register. Bootstrap server full. Try again later");
-            } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_COMMAND) {
+            } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_COMMAND")) {
                 System.out.println("Error in command");
             } else {
                 List<Credential> credentialList = registerResponse.getCredentials();
@@ -182,9 +182,9 @@ public class NodeOperator implements NodeOperations, Runnable {
 
         } else if (response instanceof SearchResponse) {
             SearchResponse searchResponse = (SearchResponse) response;
-            if (searchResponse.getNoOfFiles() == Constant.Codes.Search.ERROR_NODE_UNREACHABLE) {
+            if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_NODE_UNREACHABLE")) {
                 System.out.println("Failure due to node unreachable");
-            } else if (searchResponse.getNoOfFiles() == Constant.Codes.Search.ERROR_OTHER) {
+            } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
                 System.out.println("--------------------------------------------------------");

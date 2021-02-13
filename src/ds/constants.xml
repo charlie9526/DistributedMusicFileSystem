@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<constant>
+    <common>
+        <max_port>40000</max_port>
+        <min_port>30000</min_port>
+    </common>
+</constant>

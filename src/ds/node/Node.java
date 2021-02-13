@@ -1,8 +1,10 @@
 package ds.node;
 
+import ds.communication.SearchQuery;
 import ds.credential.Credential;
 import ds.history.StatRecord;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ public class Node {
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
     private Map<String, Credential> queryTable;
+    private ArrayList<SearchQuery> queryDetailsTable;
 
     public Credential getCredential() {
         return credential;
@@ -58,7 +61,11 @@ public class Node {
         return statTable;
     }
 
-    public void setStatTable(List<StatRecord> statTable) {
-        this.statTable = statTable;
-    }
+    public void setStatTable(List<StatRecord> statTable) {this.statTable = statTable;}
+
+    public ArrayList<SearchQuery> getQueryDetailsTable(){return this.queryDetailsTable;}
+
+    public void putSearchQuery(SearchQuery searchQuery){ this.queryDetailsTable.add(searchQuery); }
+
+    public void removeSearchQuery(SearchQuery searchQuery){ queryDetailsTable.remove(searchQuery); }
 }
