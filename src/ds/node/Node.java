@@ -74,8 +74,9 @@ public class Node {
         this.queryDetailsTable.put(searchQuery.getID(),searchQuery);
     }
 
-    public void removeSearchQuery(int searchQueryID){
-        queryDetailsTable.remove(searchQueryID);
+    public void removeSearchQuery(String searchQueryID){
+        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table after successfull search !");
+        this.queryDetailsTable.remove(searchQueryID);
     }
 
     public SearchQuery getSearchQueryByID(String ID){

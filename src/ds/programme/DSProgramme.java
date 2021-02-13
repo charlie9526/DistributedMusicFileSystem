@@ -53,7 +53,7 @@ public class DSProgramme {
                 for (int i = 0; i < searchQueries.size(); i++) {
                     String uuid = UUID.randomUUID().toString();
                     nodeOperator.getNode().addSearchQuery(new SearchQuery(uuid,searchQueries.get(i)));
-                    SearchRequest searchRequest = new SearchRequest(1, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
+                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);

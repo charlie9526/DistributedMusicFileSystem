@@ -186,6 +186,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
+                node.removeSearchQuery(searchResponse.getSequenceNo());
                 System.out.println("--------------------------------------------------------");
                 System.out.println(searchResponse.toString());
                 System.out.println("--------------------------------------------------------");
