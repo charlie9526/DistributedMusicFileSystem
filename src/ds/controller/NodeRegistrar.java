@@ -29,13 +29,15 @@ public class NodeRegistrar {
         return node;
     }
 
-    public NodeRegistrar(Credential bootstrapServerCredential,Credential nodeCredential) {
+    public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential) {
         this.node = new Node();
         node.setCredential(nodeCredential);
         node.setFileList(createFileList());
         node.setRoutingTable(new ArrayList());
         node.setStatTable(new ArrayList());
+        node.setQueryTable(new HashMap<String, Credential>());
         this.bootstrapServerCredential = bootstrapServerCredential;
+        // TODO:socket creation should be in the node constructor
         try {
             this.socket = new DatagramSocket(this.node.getCredential().getPort());
         } catch (SocketException e) {
@@ -48,18 +50,19 @@ public class NodeRegistrar {
         RegisterRequest registerRequest = new RegisterRequest(node.getCredential());
         String msg = registerRequest.getMessageAsString(Constant.Command.REG);
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
+                    InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
     public void unRegister() {
         UnregisterRequest unregisterRequest = new UnregisterRequest(node.getCredential());
         String msg = unregisterRequest.getMessageAsString(Constant.Command.UNREG);
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
+                    InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
         }
