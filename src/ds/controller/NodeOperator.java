@@ -181,6 +181,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             triggerSearchRequest(searchRequest);
 
         } else if (response instanceof SearchResponse) {
+            //TODO:need to change this function
             SearchResponse searchResponse = (SearchResponse) response;
             if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_NODE_UNREACHABLE")) {
                 System.out.println("Failure due to node unreachable");
@@ -253,6 +254,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             }
 
         } else {
+            //TODO:check cache table to check whether record is there for the searching file 
             System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             searchRequest.setHops(searchRequest.incHops());
             for (Credential credential : node.getRoutingTable()) {

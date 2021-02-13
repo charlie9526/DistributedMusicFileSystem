@@ -35,7 +35,7 @@ public class NodeRegistrar {
         node.setFileList(createFileList());
         node.setRoutingTable(new ArrayList());
         node.setStatTable(new ArrayList());
-        node.setQueryTable(new HashMap<String, Credential>());
+        node.setQueryRoutingTable(new HashMap<String, Credential>());
         this.bootstrapServerCredential = bootstrapServerCredential;
         // TODO:socket creation should be in the node constructor
         try {
