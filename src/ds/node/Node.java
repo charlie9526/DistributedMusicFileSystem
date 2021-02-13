@@ -18,7 +18,6 @@ public class Node {
     private HashMap<String,SearchQuery> queryDetailsTable = new HashMap<>();
     private Map<String, Credential> queryTable;
 
-
     public Credential getCredential() {
         return credential;
     }
@@ -63,13 +62,23 @@ public class Node {
         return statTable;
     }
 
-    public void setStatTable(List<StatRecord> statTable) {this.statTable = statTable;}
+    public void setStatTable(List<StatRecord> statTable) {
+        this.statTable = statTable;
+    }
 
-    public HashMap<String,SearchQuery> getQueryDetailsTable(){return this.queryDetailsTable;}
+    public HashMap<String,SearchQuery> getQueryDetailsTable(){
+        return this.queryDetailsTable;
+    }
 
-    public void addSearchQuery(SearchQuery searchQuery){ this.queryDetailsTable.put(searchQuery.getID(),searchQuery); }
+    public void addSearchQuery(SearchQuery searchQuery){
+        this.queryDetailsTable.put(searchQuery.getID(),searchQuery);
+    }
 
-    public void removeSearchQuery(int searchQueryID){ queryDetailsTable.remove(searchQueryID); }
+    public void removeSearchQuery(int searchQueryID){
+        queryDetailsTable.remove(searchQueryID);
+    }
 
-    public SearchQuery getSearchQueryByID(String ID){ return this.queryDetailsTable.get(ID);}
+    public SearchQuery getSearchQueryByID(String ID){
+        return this.queryDetailsTable.get(ID);
+    }
 }

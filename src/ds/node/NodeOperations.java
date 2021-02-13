@@ -25,8 +25,6 @@ public interface NodeOperations {
 
     void error(Credential senderCredential);
 
-    boolean isRegOk();
-
     List<String> checkForFiles(String fileName, List<String> fileList);
 
     void triggerSearchRequest(SearchRequest searchRequest);

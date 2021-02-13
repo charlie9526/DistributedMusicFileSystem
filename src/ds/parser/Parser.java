@@ -20,7 +20,8 @@ public class Parser {
 
         String length = st.nextToken();
         String command = st.nextToken();
-
+        System.out.println(length+"===length");
+        System.out.println(command+"====comamnd");
         if (command.equals(Constant.commandConstants.get("REG"))) {
             String ip = st.nextToken();
             int port = Integer.parseInt(st.nextToken());

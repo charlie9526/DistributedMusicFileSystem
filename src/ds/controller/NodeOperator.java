@@ -22,7 +22,6 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     private Node node;
     private DatagramSocket socket;
-    private boolean regOk = false;
     private NodeRegistrar nodeRegistrar;
 
     public NodeOperator(Credential nodeCredential,NodeRegistrar nodeRegistrar) {
@@ -34,7 +33,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     public Node getNode() {
         return node;
     }
-
+    public NodeRegistrar getNodeRegistrar(){return this.nodeRegistrar;}
     @Override
     public void run() {
         System.out.println("Server " + this.node.getCredential().getUsername() + " created at " + this.node.getCredential().getPort() + ". Waiting for incoming data...");
@@ -166,7 +165,7 @@ public class NodeOperator implements NodeOperations, Runnable {
                 printRoutingTable(routingTable);
                 //TODO: check whether the received nodes are alive before adding to routing table
                 this.node.setRoutingTable(routingTable);
-                this.regOk = true;
+                this.nodeRegistrar.setRegOK(true);
             }
 
         } else if (response instanceof UnregisterResponse) {
@@ -174,7 +173,7 @@ public class NodeOperator implements NodeOperations, Runnable {
             node.setRoutingTable(new ArrayList<>());
             node.setFileList(new ArrayList<>());
             node.setStatTable(new ArrayList<>());
-            this.regOk = false;
+            this.nodeRegistrar.setRegOK(false);
 
         } else if (response instanceof SearchRequest) {
             SearchRequest searchRequest = (SearchRequest) response;
@@ -214,11 +213,6 @@ public class NodeOperator implements NodeOperations, Runnable {
             ErrorResponse errorResponse = (ErrorResponse) response;
             System.out.println(errorResponse.toString());
         }
-    }
-
-    @Override
-    public boolean isRegOk() {
-        return regOk;
     }
 
     @Override

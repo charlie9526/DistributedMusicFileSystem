@@ -49,7 +49,7 @@ public class DSProgramme {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (nodeOperator.isRegOk()) {
+            if (nodeOperator.getNodeRegistrar().isRegOK()) {
                 for (int i = 0; i < searchQueries.size(); i++) {
                     String uuid = UUID.randomUUID().toString();
                     nodeOperator.getNode().addSearchQuery(new SearchQuery(uuid,searchQueries.get(i)));
