@@ -4,6 +4,7 @@ import ds.communication.SearchQuery;
 import ds.credential.Credential;
 import ds.history.StatRecord;
 
+import java.net.DatagramSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +16,26 @@ public class Node {
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
-    private HashMap<String,SearchQuery> queryDetailsTable = new HashMap<>();
+    private HashMap<String,SearchQuery> queryDetailsTable ;
     private Map<String, Credential> queryTable;
+    private DatagramSocket socket;
+
+    public Node(DatagramSocket socket,Credential credential,List<String> fileList){
+        this.socket = socket;
+        this.credential = credential;
+        this.fileList = fileList;
+        this.statTable = new ArrayList();
+        this.queryDetailsTable = new HashMap<>();
+        this.routingTable = new ArrayList();
+        this.queryTable = new HashMap<String, Credential>();
+    }
 
     public Credential getCredential() {
         return credential;
+    }
+
+    public DatagramSocket getSocket(){
+        return this.socket;
     }
 
     public Map<String, Credential> getQueryTable() {
