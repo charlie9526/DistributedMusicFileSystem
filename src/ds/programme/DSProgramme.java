@@ -19,12 +19,12 @@ public class DSProgramme {
             System.out.println(paramNames[i/2] + " : " + args[i + 1]);
         }
 
-        String bootstrapIp = paramsMap.get("-bi") != null ? paramsMap.get("-bi") : Constant.IP_BOOTSTRAP_SERVER;
-        String nodeIp = paramsMap.get("-ni") != null ? paramsMap.get("-ni") : Constant.IP_BOOTSTRAP_SERVER;
-        int nodePort = paramsMap.get("-np") != null ? Integer.parseInt(paramsMap.get("-np")) : new Random().nextInt(Constant.MAX_PORT_NODE - Constant.MIN_PORT_NODE) + Constant.MIN_PORT_NODE;
+        String bootstrapIp = paramsMap.get("-bi") != null ? paramsMap.get("-bi") : Constant.IPConstants.get("IP_BOOTSTRAP_SERVER");
+        String nodeIp = paramsMap.get("-ni") != null ? paramsMap.get("-ni") : Constant.IPConstants.get("IP_BOOTSTRAP_SERVER");
+        int nodePort = paramsMap.get("-np") != null ? Integer.parseInt(paramsMap.get("-np")) : new Random().nextInt(Constant.portConstants.get("MAX_PORT_NODE") - Constant.portConstants.get("MIN_PORT_NODE")) + Constant.portConstants.get("MIN_PORT_NODE");
         String nodeUsername = paramsMap.get("-nu") != null ? paramsMap.get("-nu") : UUID.randomUUID().toString();
 
-        Credential bootstrapServerCredential = new Credential(bootstrapIp, Constant.PORT_BOOTSTRAP_SERVER, Constant.USERNAME_BOOTSTRAP_SERVER);
+        Credential bootstrapServerCredential = new Credential(bootstrapIp, Constant.portConstants.get("PORT_BOOTSTRAP_SERVER"), Constant.usernameConstants.get("USERNAME_BOOTSTRAP_SERVER"));
         Map<Integer, String> searchQueryTable = new HashMap<>();
 
         List<String> searchQueries = Arrays.asList("Twilight", "Jack", "American_Idol", "Happy_Feet", "Twilight_saga", "Happy_Feet", "Feet");
