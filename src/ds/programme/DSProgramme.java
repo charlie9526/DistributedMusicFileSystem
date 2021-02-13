@@ -3,6 +3,7 @@ package ds.programme;
 import ds.communication.request.SearchRequest;
 import ds.constant.Constant;
 import ds.controller.NodeOperator;
+import ds.controller.NodeRegistrar;
 import ds.credential.Credential;
 
 import java.util.*;
@@ -33,11 +34,14 @@ public class DSProgramme {
         // Generate self credentials
         Credential nodeCredential = new Credential(nodeIp, nodePort, nodeUsername);
 
+//        Register the node with oostrap
+        NodeRegistrar nodeRegistrar = new NodeRegistrar(bootstrapServerCredential,nodeCredential);
+
         // Initiate the thread for UDP connection
-        NodeOperator nodeOperator = new NodeOperator(bootstrapServerCredential, nodeCredential);
+        NodeOperator nodeOperator = new NodeOperator(bootstrapServerCredential, nodeRegistrar);
 
         // Register in network
-        nodeOperator.register();
+        nodeRegistrar.register();
         while (true) {
             try {
                 Thread.sleep(1000);

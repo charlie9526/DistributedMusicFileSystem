@@ -21,19 +21,13 @@ import java.util.stream.Collectors;
 public class NodeOperator implements NodeOperations, Runnable {
 
     private Node node;
-    private Credential bootstrapServerCredential;
     private DatagramSocket socket;
     private boolean regOk = false;
+    private NodeRegistrar nodeRegistrar;
 
-    public NodeOperator(Credential bootstrapServerCredential, Credential nodeCredential) {
-        this.bootstrapServerCredential = bootstrapServerCredential;
-
-        this.node = new Node();
-        node.setCredential(nodeCredential);
-        node.setFileList(createFileList());
-        node.setRoutingTable(new ArrayList());
-        node.setStatTable(new ArrayList());
-
+    public NodeOperator(Credential nodeCredential,NodeRegistrar nodeRegistrar) {
+        this.nodeRegistrar = nodeRegistrar;
+        this.node = nodeRegistrar.getNode();
         this.start();
     }
 
@@ -61,35 +55,10 @@ public class NodeOperator implements NodeOperations, Runnable {
         }
     }
 
-    @Override
     public void start() {
-        try {
-            socket = new DatagramSocket(this.node.getCredential().getPort());
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        new Thread(this).start();
-    }
-
-    @Override
-    public void register() {
-        RegisterRequest registerRequest = new RegisterRequest(node.getCredential());
-        String msg = registerRequest.getMessageAsString(Constant.Command.REG);
-        try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void unRegister() {
-        UnregisterRequest unregisterRequest = new UnregisterRequest(node.getCredential());
-        String msg = unregisterRequest.getMessageAsString(Constant.Command.UNREG);
-        try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        socket = nodeRegistrar.getSocket();
+        if (socket!=null){
+            new Thread(this).start();
         }
     }
 
@@ -169,35 +138,6 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public List<String> createFileList() {
-        ArrayList<String> fileList = new ArrayList<>();
-        fileList.add("Adventures_of_Tintin");
-        fileList.add("Jack_and_Jill");
-        fileList.add("Glee");
-        fileList.add("The_Vampire Diarie");
-        fileList.add("King_Arthur");
-        fileList.add("Windows_XP");
-        fileList.add("Harry_Potter");
-        fileList.add("Kung_Fu_Panda");
-        fileList.add("Lady_Gaga");
-        fileList.add("Twilight");
-        fileList.add("Windows_8");
-        fileList.add("Mission_Impossible");
-        fileList.add("Turn_Up_The_Music");
-        fileList.add("Super_Mario");
-        fileList.add("American_Pickers");
-        fileList.add("Microsoft_Office_2010");
-        fileList.add("Happy_Feet");
-        fileList.add("Modern_Family");
-        fileList.add("American_Idol");
-        fileList.add("Hacking_for_Dummies");
-        Collections.shuffle(fileList);
-        List<String> subFileList = fileList.subList(0, 5);
-        System.out.println("File List : " + Arrays.toString(subFileList.toArray()));
-        return subFileList;
-    }
-
-    @Override
     public void processResponse(Message response) {
         if (response instanceof RegisterResponse) {
             RegisterResponse registerResponse = (RegisterResponse) response;
@@ -206,13 +146,13 @@ public class NodeOperator implements NodeOperations, Runnable {
                 Credential credential = node.getCredential();
                 credential.setUsername(UUID.randomUUID().toString());
                 node.setCredential(credential);
-                register();
+                nodeRegistrar.register();
             } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_DUPLICATE_IP) {
                 System.out.println("Already registered at Bootstrap with same port");
                 Credential credential = node.getCredential();
                 credential.setPort(credential.getPort() + 1);
                 node.setCredential(credential);
-                register();
+                nodeRegistrar.register();
             } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_CANNOT_REGISTER) {
                 System.out.printf("Can’t register. Bootstrap server full. Try again later");
             } else if (registerResponse.getNoOfNodes() == Constant.Codes.Register.ERROR_COMMAND) {

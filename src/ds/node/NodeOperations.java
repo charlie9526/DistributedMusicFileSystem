@@ -9,12 +9,6 @@ import java.util.List;
 
 public interface NodeOperations {
 
-    void start();
-
-    void register();
-
-    void unRegister();
-
     void join(Credential neighbourCredential);
 
     void joinOk(Credential senderCredential);
@@ -26,8 +20,6 @@ public interface NodeOperations {
     void search(SearchRequest searchRequest, Credential sendCredential);
 
     void searchOk(SearchResponse searchResponse);
-
-    List<String> createFileList();
 
     void processResponse(Message response);
 
