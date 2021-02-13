@@ -19,7 +19,7 @@ public interface NodeOperations {
 
     void search(SearchRequest searchRequest, Credential sendCredential);
 
-    void searchOk(SearchResponse searchResponse);
+    void searchOk(SearchResponse searchResponse,Credential recieverCredentials);
 
     void processResponse(Message response);
 

@@ -116,10 +116,10 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public void searchOk(SearchResponse searchResponse) {
+    public void searchOk(SearchResponse searchResponse,Credential recieverCredintials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(searchResponse.getCredential().getIp()), searchResponse.getCredential().getPort()));
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(recieverCredintials.getIp()), recieverCredintials.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -239,14 +239,13 @@ public class NodeOperator implements NodeOperations, Runnable {
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), searchRequest.getCredential(), searchRequest.getHops(), searchResult);
+            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult);
             if (searchRequest.getCredential().getIp() == node.getCredential().getIp() && searchRequest.getCredential().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
                 System.out.println("Send SEARCHOK response message");
-                searchOk(searchResponse);
+                searchOk(searchResponse,searchRequest.getCredential());
             }
-
         } else {
             System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             searchRequest.setHops(searchRequest.incHops());
