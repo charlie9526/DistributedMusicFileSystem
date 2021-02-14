@@ -12,26 +12,16 @@ public class SearchResponse extends Message {
     private int hops;
     private List<String> fileList;
     private Credential senderCredentials;
-    private Credential fileRequestedNodeCredentials;
 
     public SearchResponse(String sequenceNo, int noOfFiles, Credential credential, int hops, List<String> fileList,
-            Credential senderCredentials,Credential fileRequestedNodeCredentials) {
+            Credential senderCredentials) {
         this.sequenceNo = sequenceNo;
         this.noOfFiles = noOfFiles;
         this.credential = credential;
         this.hops = hops;
         this.fileList = fileList;
         this.senderCredentials = senderCredentials;
-        this.fileRequestedNodeCredentials=fileRequestedNodeCredentials;
 
-    }
-
-    public Credential getFileRequestedNodeCredentials() {
-        return fileRequestedNodeCredentials;
-    }
-
-    public void setFileRequestedNodeCredentials(Credential fileRequestedNodeCredentials) {
-        this.fileRequestedNodeCredentials = fileRequestedNodeCredentials;
     }
 
     public Credential getSenderCredentials() {
