@@ -87,7 +87,7 @@ public class Parser {
             return new SearchRequest(seqNum, crd, fileName, hops,senderCredential);
 
         } else if (command.equals(Constant.commandConstants.get("SEARCHOK"))) {
-            String sequenceNo = st.nextToken();
+            String searchQueryID = st.nextToken();
             int numOfFiles = Integer.parseInt(st.nextToken());
             String ip = st.nextToken();
             int port = Integer.parseInt(st.nextToken());
@@ -99,7 +99,7 @@ public class Parser {
                 }
             }
             Credential endNodeCredentials = new Credential(ip, port, null);
-            return new SearchResponse(sequenceNo, numOfFiles, endNodeCredentials, hops, fileList,senderCredential,);
+            return new SearchResponse(searchQueryID, numOfFiles, endNodeCredentials, hops, fileList,senderCredential);
 
         } else if (command.equals(Constant.codeConstants.get("ERROR"))) {
             return new ErrorResponse();

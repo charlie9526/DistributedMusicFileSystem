@@ -5,14 +5,14 @@ import ds.credential.Credential;
 
 public class SearchRequest extends Message {
 
-    private String sequenceNo;
+    private String searchQueryID;
     private Credential triggeredCredential;
     private String fileName;
     private int hops;
     private Credential senderCredentials;
 
     public SearchRequest(String searchQueryID, Credential triggeredCredential, String fileName, int hops,Credential senderCredentials) {
-        this.sequenceNo = searchQueryID;
+        this.searchQueryID = searchQueryID;
         this.triggeredCredential = triggeredCredential;
         this.fileName = fileName;
         this.hops = hops;
@@ -35,12 +35,12 @@ public class SearchRequest extends Message {
         this.triggeredCredential = credential;
     }
 
-    public String getSequenceNo() {
-        return sequenceNo;
+    public String getSearchQueryID() {
+        return searchQueryID;
     }
 
-    public void setSequenceNo(String searchQueryID) {
-        this.sequenceNo = sequenceNo;
+    public void setSearchQueryID(String searchQueryID) {
+        this.searchQueryID = this.searchQueryID;
     }
 
     public String getFileName() {
@@ -61,7 +61,7 @@ public class SearchRequest extends Message {
 
     @Override
     public String getMessageAsString(String message) {
-        message += " " + sequenceNo + " " + this.getCredential().getIp() + " " + this.getCredential().getPort() + " " + this.getFileName() + " " + this.getHops();
+        message += " " + searchQueryID + " " + this.getCredential().getIp() + " " + this.getCredential().getPort() + " " + this.getFileName() + " " + this.getHops();
         return super.getMessageAsString(message);
     }
 

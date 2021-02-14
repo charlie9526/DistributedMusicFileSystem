@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -108,7 +107,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
         String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
-        this.getNode().addQueryRecordToRouting(searchRequest.getSequenceNo(),searchRequest.getSenderCredentials());
+        this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(),searchRequest.getSenderCredentials());
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
         } catch (IOException e) {
@@ -255,7 +254,7 @@ public class NodeOperator implements NodeOperations, Runnable {
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult,node.getCredential(),node.getCredential());
+            SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult,node.getCredential());
             if (searchRequest.getCredential().getIp() == node.getCredential().getIp() && searchRequest.getCredential().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
@@ -265,9 +264,9 @@ public class NodeOperator implements NodeOperations, Runnable {
         } else if(checkFileInCache()) {
             //make search response and send call searchOK
             searchRequest.setHops(searchRequest.incHops());
-            if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
-                node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
-            }
+            // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
+            //     node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
+            // }
             
             //TODO: not send to all records of routing table,only send to subset from that that randomly picked
             for (Credential credential : node.getRoutingTable()) {

@@ -1,6 +1,6 @@
 package ds.node;
 
-import ds.communication.SearchQuery;
+import ds.communication.request.SearchRequest;
 import ds.credential.Credential;
 import ds.history.StatRecord;
 
@@ -16,7 +16,7 @@ public class Node {
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
-    private HashMap<String,SearchQuery> queryDetailsTable ;
+    private HashMap<String, SearchRequest> queryDetailsTable ;
     private Map<String, Credential> queryRoutingTable;
     private DatagramSocket socket;
 
@@ -86,12 +86,12 @@ public class Node {
         this.statTable = statTable;
     }
 
-    public HashMap<String,SearchQuery> getQueryDetailsTable(){
+    public HashMap<String,SearchRequest> getQueryDetailsTable(){
         return this.queryDetailsTable;
     }
 
-    public void addSearchQuery(SearchQuery searchQuery){
-        this.queryDetailsTable.put(searchQuery.getID(),searchQuery);
+    public void addSearchQuery(SearchRequest searchQuery){
+        this.queryDetailsTable.put(searchQuery.getSearchQueryID(),searchQuery);
     }
 
     public void removeSearchQuery(String searchQueryID){
@@ -99,7 +99,7 @@ public class Node {
         this.queryDetailsTable.remove(searchQueryID);
     }
 
-    public SearchQuery getSearchQueryByID(String ID){
+    public SearchRequest getSearchQueryByID(String ID){
         return this.queryDetailsTable.get(ID);
     }
 }
