@@ -5,18 +5,15 @@ import ds.credential.Credential;
 import ds.history.StatRecord;
 
 import java.net.DatagramSocket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class Node {
+public class Node implements Observer {
 
     private Credential credential;
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
-    private HashMap<String, SearchRequest> queryDetailsTable ;
+    private Hashtable<String, SearchRequest> queryDetailsTable ;
     private Map<String, Credential> queryRoutingTable;
     private DatagramSocket socket;
 
@@ -25,7 +22,7 @@ public class Node {
         this.credential = credential;
         this.fileList = fileList;
         this.statTable = new ArrayList();
-        this.queryDetailsTable = new HashMap<>();
+        this.queryDetailsTable = new Hashtable<>();
         this.routingTable = new ArrayList();
         this.queryRoutingTable = new HashMap<String, Credential>();
     }
@@ -86,7 +83,7 @@ public class Node {
         this.statTable = statTable;
     }
 
-    public HashMap<String,SearchRequest> getQueryDetailsTable(){
+    public Hashtable<String,SearchRequest> getQueryDetailsTable(){
         return this.queryDetailsTable;
     }
 
@@ -95,11 +92,19 @@ public class Node {
     }
 
     public void removeSearchQuery(String searchQueryID){
-        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table after successfull search !");
-        this.queryDetailsTable.remove(searchQueryID);
+        synchronized (this.queryDetailsTable){
+            this.queryDetailsTable.remove(searchQueryID);
+        }
+        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table !");
     }
 
     public SearchRequest getSearchQueryByID(String ID){
         return this.queryDetailsTable.get(ID);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        System.out.println("Search query "+(String) arg+" is expired !");
+        removeSearchQuery((String) arg);
     }
 }

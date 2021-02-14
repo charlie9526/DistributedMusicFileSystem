@@ -4,6 +4,7 @@ import ds.communication.request.SearchRequest;
 import ds.constant.Constant;
 import ds.controller.NodeOperator;
 import ds.controller.NodeRegistrar;
+import ds.controller.TimeKeeperSingleton;
 import ds.credential.Credential;
 
 import java.util.*;
@@ -27,7 +28,7 @@ public class DSProgramme {
         Credential bootstrapServerCredential = new Credential(bootstrapIp, Constant.portConstants.get("PORT_BOOTSTRAP_SERVER"), Constant.usernameConstants.get("USERNAME_BOOTSTRAP_SERVER"));
         Map<Integer, String> searchQueryTable = new HashMap<>();
 
-        List<String> searchQueries = Arrays.asList("Adventures_of_Tintin", "Harry_Potter");
+        List<String> searchQueries = Arrays.asList("Adventures_of_Tintin", "Harry_Potter","American_Pickers");
         Collections.shuffle(searchQueries);
 
 //        Generate self credentials
@@ -42,6 +43,11 @@ public class DSProgramme {
 //        Register in network
         nodeRegistrar.register();
 
+        TimeKeeperSingleton timeKeeper = TimeKeeperSingleton.getTimeKeeper();
+        timeKeeper.addObserver(nodeRegistrar.getNode());
+        timeKeeper.addNodeToList(nodeRegistrar.getNode());
+        timeKeeper.start();
+
         while (true) {
             try {
                 Thread.sleep(1000);
@@ -50,10 +56,9 @@ public class DSProgramme {
             }
             if (nodeOperator.getNodeRegistrar().isRegOK()) {
                 for (int i = 0; i < searchQueries.size(); i++) {
-                    System.out.println(searchQueries.get(i));
-                    String uuid = UUID.randomUUID().toString();
+//                    System.out.println(searchQueries.get(i));
+                    String uuid = UUID.randomUUID().toString()+"-"+nodeOperator.getNode().getCredential().getUsername();
                     SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(),searchQueries.get(i) , 0,nodeOperator.getNode().getCredential());
-                    nodeOperator.getNode().addSearchQuery(searchRequest);
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);

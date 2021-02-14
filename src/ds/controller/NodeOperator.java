@@ -107,9 +107,17 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
         String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
-        this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(),searchRequest.getSenderCredentials());
+        if ((this.getNode().getCredential().getIp()!=searchRequest.getTriggeredCredentials().getIp()) && this.getNode().getCredential().getPort()!=searchRequest.getTriggeredCredentials().getPort()){
+            this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(),searchRequest.getSenderCredentials());
+            System.out.println("Query Record Added=======>");
+        }
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
+            if ((this.getNode().getCredential().getIp()==searchRequest.getTriggeredCredentials().getIp()) && this.getNode().getCredential().getPort()==searchRequest.getTriggeredCredentials().getPort()){
+                node.addSearchQuery(searchRequest);
+                System.out.println(">>>>>>>>>>>>>>>>"+this.getNode().getQueryDetailsTable().size());
+                System.out.println(">>>"+TimeKeeperSingleton.getTimeKeeper().getNodeListSize());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,6 +127,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     public void searchOk(SearchResponse searchResponse,Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
+            System.out.println("Search OOKKK");
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -190,14 +199,16 @@ public class NodeOperator implements NodeOperations, Runnable {
                 if((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
                     Credential queryFrom=this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
                     searchResponse.setSenderCredentials(node.getCredential());
+                    System.out.println("Query routing table record is deleted========>");
                     searchOk(searchResponse, queryFrom);
                 }else if(node.getSearchQueryByID(searchResponse.getSequenceNo())!=null){
                     node.removeSearchQuery(searchResponse.getSequenceNo());
                     System.out.println("--------------------------------------------------------");
                     System.out.println(searchResponse.toString());
                     System.out.println("--------------------------------------------------------");
+                }else{
+                    System.out.println("File already recieved or time is expired.");
                 }
-                
             }
 
         } else if (response instanceof JoinRequest) {
@@ -262,7 +273,7 @@ public class NodeOperator implements NodeOperations, Runnable {
                 System.out.println("Send SEARCHOK response message");
                 searchOk(searchResponse,searchRequest.getSenderCredentials());
             }
-        } else if(checkFileInCache()) {
+        } else if(!checkFileInCache()) {
             //make search response and send call searchOK
             searchRequest.setHops(searchRequest.incHops());
             // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
@@ -270,9 +281,13 @@ public class NodeOperator implements NodeOperations, Runnable {
             // }
             
             //TODO: not send to all records of routing table,only send to subset from that that randomly picked
-            for (Credential credential : node.getRoutingTable()) {
-                search(searchRequest, credential);
-                System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
+            if (node.getRoutingTable().size()>0){
+                for (Credential credential : node.getRoutingTable()) {
+                    if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp() && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
+                        search(searchRequest, credential);
+                        System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
+                    }
+                }
             }
         }
     }

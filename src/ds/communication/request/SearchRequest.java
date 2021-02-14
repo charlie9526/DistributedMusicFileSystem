@@ -3,6 +3,9 @@ package ds.communication.request;
 import ds.communication.Message;
 import ds.credential.Credential;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+
 public class SearchRequest extends Message {
 
     private String searchQueryID;
@@ -10,6 +13,9 @@ public class SearchRequest extends Message {
     private String fileName;
     private int hops;
     private Credential senderCredentials;
+    private Timestamp manufacturedTime;
+    private Timestamp expiredTime;
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
 
     public SearchRequest(String searchQueryID, Credential triggeredCredential, String fileName, int hops,Credential senderCredentials) {
         this.searchQueryID = searchQueryID;
@@ -17,6 +23,10 @@ public class SearchRequest extends Message {
         this.fileName = fileName;
         this.hops = hops;
         this.senderCredentials=senderCredentials;
+        this.manufacturedTime = new Timestamp(System.currentTimeMillis());
+//        System.out.println(sdf.format(this.manufacturedTime));
+        this.expiredTime = new Timestamp(this.manufacturedTime.getTime()+30000);
+//        System.out.println(sdf.format(this.expiredTime));
     }
 
     public Credential getSenderCredentials() {
@@ -29,6 +39,10 @@ public class SearchRequest extends Message {
 
     public Credential getTriggeredCredentials() {
         return triggeredCredential;
+    }
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
     }
 
     public void setTriggeredCredentials(Credential credential) {
