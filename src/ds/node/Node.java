@@ -50,8 +50,8 @@ public class Node {
         this.queryRoutingTable.put(queryId, from);
     }
 
-    public void removeQueryRecordFromRouting(String queryId) {
-        this.queryRoutingTable.remove(queryId);
+    public Credential removeQueryRecordFromRouting(String queryId) {
+        return this.queryRoutingTable.remove(queryId);
     }
 
     public Credential getQueryRoutingRecord(String queryId){

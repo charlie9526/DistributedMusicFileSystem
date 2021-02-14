@@ -27,11 +27,11 @@ public class SearchRequest extends Message {
         this.senderCredentials = senderCredentials;
     }
 
-    public Credential getCredential() {
+    public Credential getTriggeredCredentials() {
         return triggeredCredential;
     }
 
-    public void setCredential(Credential credential) {
+    public void setTriggeredCredentials(Credential credential) {
         this.triggeredCredential = credential;
     }
 

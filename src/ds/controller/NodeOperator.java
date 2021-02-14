@@ -118,15 +118,10 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void searchOk(SearchResponse searchResponse,Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
-        if((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
-            this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
-            try {
-                socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }else{
-
+        try {
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         
     }
@@ -186,17 +181,23 @@ public class NodeOperator implements NodeOperations, Runnable {
             triggerSearchRequest(searchRequest);
 
         } else if (response instanceof SearchResponse) {
-            //TODO:need to change this function
             SearchResponse searchResponse = (SearchResponse) response;
             if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_NODE_UNREACHABLE")) {
                 System.out.println("Failure due to node unreachable");
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
-                node.removeSearchQuery(searchResponse.getSequenceNo());
-                System.out.println("--------------------------------------------------------");
-                System.out.println(searchResponse.toString());
-                System.out.println("--------------------------------------------------------");
+                if((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
+                    Credential queryFrom=this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
+                    searchResponse.setSenderCredentials(node.getCredential());
+                    searchOk(searchResponse, queryFrom);
+                }else if(node.getSearchQueryByID(searchResponse.getSequenceNo())!=null){
+                    node.removeSearchQuery(searchResponse.getSequenceNo());
+                    System.out.println("--------------------------------------------------------");
+                    System.out.println(searchResponse.toString());
+                    System.out.println("--------------------------------------------------------");
+                }
+                
             }
 
         } else if (response instanceof JoinRequest) {
@@ -255,7 +256,7 @@ public class NodeOperator implements NodeOperations, Runnable {
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult,node.getCredential());
-            if (searchRequest.getCredential().getIp() == node.getCredential().getIp() && searchRequest.getCredential().getPort() == node.getCredential().getPort()) {
+            if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
                 System.out.println("Send SEARCHOK response message");
