@@ -5,12 +5,9 @@ import ds.credential.Credential;
 import ds.history.StatRecord;
 
 import java.net.DatagramSocket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class Node {
+public class Node implements Observer {
 
     private Credential credential;
     private List<String> fileList;
@@ -91,11 +88,17 @@ public class Node {
     }
 
     public void removeSearchQuery(String searchQueryID){
-        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table after successfull search !");
+        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table !");
         this.queryDetailsTable.remove(searchQueryID);
     }
 
     public SearchRequest getSearchQueryByID(String ID){
         return this.queryDetailsTable.get(ID);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        System.out.println("Search query "+(String) arg+" is expired !");
+        removeSearchQuery((String) arg);
     }
 }

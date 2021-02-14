@@ -248,9 +248,16 @@ public class NodeOperator implements NodeOperations, Runnable {
         } else {
             System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             searchRequest.setHops(searchRequest.incHops());
-            for (Credential credential : node.getRoutingTable()) {
-                search(searchRequest, credential);
-                System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
+            if (node.getRoutingTable().size()>0){
+                for (Credential credential : node.getRoutingTable()) {
+                    if (searchRequest.getCredential().getIp() != credential.getIp() && searchRequest.getCredential().getPort() != credential.getPort()) {
+                        search(searchRequest, credential);
+                        System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
+                    }
+                }
+                this.getNode().addSearchQuery(searchRequest);
+                System.out.println(">>>>>>>>>>>>>>>>"+this.getNode().getQueryDetailsTable().size());
+                System.out.println(">>>"+TimeKeeperSingleton.getTimeKeeper().getNodeListSize());
             }
         }
     }
