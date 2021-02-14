@@ -52,7 +52,7 @@ public class DSProgramme {
                 for (int i = 0; i < searchQueries.size(); i++) {
                     System.out.println(searchQueries.get(i));
                     String uuid = UUID.randomUUID().toString();
-                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(),searchQueries.get(i) , 0);
+                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(),searchQueries.get(i) , 0,nodeOperator.getNode().getCredential());
                     nodeOperator.getNode().addSearchQuery(searchRequest);
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
