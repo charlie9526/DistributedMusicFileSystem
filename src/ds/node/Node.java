@@ -7,7 +7,7 @@ import ds.history.StatRecord;
 import java.net.DatagramSocket;
 import java.util.*;
 
-public class Node implements Observer {
+public class Node {
 
     private Credential credential;
     private List<String> fileList;
@@ -113,9 +113,4 @@ public class Node implements Observer {
         return this.queryDetailsTable.get(ID);
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        System.out.println("Search query " + (String) arg + " is expired !");
-        removeSearchQuery((String) arg);
-    }
 }

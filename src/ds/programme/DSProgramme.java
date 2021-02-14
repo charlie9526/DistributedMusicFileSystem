@@ -44,7 +44,7 @@ public class DSProgramme {
         nodeRegistrar.register();
 
         TimeKeeperSingleton timeKeeper = TimeKeeperSingleton.getTimeKeeper();
-        timeKeeper.addObserver(nodeRegistrar.getNode());
+        timeKeeper.addObserver(nodeOperator);
         timeKeeper.addNodeToList(nodeRegistrar.getNode());
         timeKeeper.start();
 

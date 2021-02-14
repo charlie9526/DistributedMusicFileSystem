@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class NodeOperator implements NodeOperations, Runnable {
+public class NodeOperator implements NodeOperations, Runnable, Observer {
 
     private Node node;
     private DatagramSocket socket;
@@ -275,7 +275,7 @@ public class NodeOperator implements NodeOperations, Runnable {
         //search file in file collection
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
-            System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+            System.out.println("File "+searchRequest.getFileName()+" is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
@@ -298,6 +298,18 @@ public class NodeOperator implements NodeOperations, Runnable {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        SearchRequest sr = (SearchRequest) arg;
+        System.out.println("Search query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
+        node.removeSearchQuery(sr.getSearchQueryID());
+        if (sr.getRetriedCount() < 2) {
+            sr.incrementExpiredTime();
+            sr.incrementRetriedCount();
+            triggerSearchRequest(sr);
         }
     }
 }
