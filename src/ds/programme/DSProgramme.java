@@ -54,7 +54,7 @@ public class DSProgramme {
                     System.out.println(searchQueries.get(i));
                     String uuid = UUID.randomUUID().toString();
                     nodeOperator.getNode().addSearchQuery(new SearchQuery(uuid,searchQueries.get(i)));
-                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0);
+                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), nodeOperator.getNode().getSearchQueryByID(uuid).getQueryFileNameString(), 0,nodeOperator.getNode().getCredential());
                     nodeOperator.triggerSearchRequest(searchRequest);
                     try {
                         Thread.sleep(5000);

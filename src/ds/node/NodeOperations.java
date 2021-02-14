@@ -31,4 +31,6 @@ public interface NodeOperations {
 
     void printRoutingTable(List<Credential> routingTable);
 
+    boolean checkFileInCache();
+
 }

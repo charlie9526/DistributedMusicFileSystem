@@ -108,6 +108,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
         String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
+        this.getNode().addQueryRecordToRouting(searchRequest.getSequenceNo(),searchRequest.getSenderCredentials());
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
         } catch (IOException e) {
@@ -118,11 +119,17 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void searchOk(SearchResponse searchResponse,Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
-        try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
+            this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
+            try {
+                socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+
         }
+        
     }
 
     @Override
@@ -235,22 +242,34 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
+    public boolean checkFileInCache() {
+        //TODO:check cache table to check whether record is there for the searching file 
+        System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+        return false;
+    }
+
+    @Override
     public void triggerSearchRequest(SearchRequest searchRequest) {
         System.out.println("\nTriggered search request for " + searchRequest.getFileName());
+        //search file in file collection
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult);
+            SearchResponse searchResponse = new SearchResponse(searchRequest.getSequenceNo(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult,node.getCredential(),node.getCredential());
             if (searchRequest.getCredential().getIp() == node.getCredential().getIp() && searchRequest.getCredential().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
                 System.out.println("Send SEARCHOK response message");
-                searchOk(searchResponse,searchRequest.getCredential());
+                searchOk(searchResponse,searchRequest.getSenderCredentials());
             }
-        } else {
-            //TODO:check cache table to check whether record is there for the searching file 
-            System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+        } else if(checkFileInCache()) {
+            //make search response and send call searchOK
             searchRequest.setHops(searchRequest.incHops());
+            if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
+                node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
+            }
+            
+            //TODO: not send to all records of routing table,only send to subset from that that randomly picked
             for (Credential credential : node.getRoutingTable()) {
                 search(searchRequest, credential);
                 System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
