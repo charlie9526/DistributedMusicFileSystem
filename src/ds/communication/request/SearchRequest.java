@@ -61,7 +61,7 @@ public class SearchRequest extends Message {
 
     @Override
     public String getMessageAsString(String message) {
-        message += " " + searchQueryID + " " + this.getCredential().getIp() + " " + this.getCredential().getPort() + " " + this.getFileName() + " " + this.getHops();
+        message += " " + searchQueryID + " " + this.getTriggeredCredentials().getIp() + " " + this.getTriggeredCredentials().getPort() + " " + this.getFileName() + " " + this.getHops();
         return super.getMessageAsString(message);
     }
 
