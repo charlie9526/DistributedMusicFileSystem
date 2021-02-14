@@ -116,10 +116,10 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public void searchOk(SearchResponse searchResponse,Credential recieverCredintials) {
+    public void searchOk(SearchResponse searchResponse,Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(recieverCredintials.getIp()), recieverCredintials.getPort()));
+            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
         }

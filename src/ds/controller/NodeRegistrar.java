@@ -19,39 +19,33 @@ public class NodeRegistrar {
 
     private Node node;
     private Credential bootstrapServerCredential;
-    private DatagramSocket socket;
     private Boolean regOK = false;
 
+    public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential) {
+        DatagramSocket socket = null;
+        try {
+            socket = new DatagramSocket(nodeCredential.getPort());
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }finally {
+            this.node = new Node(socket,nodeCredential,createFileList());
+        }
+        this.bootstrapServerCredential = bootstrapServerCredential;
+    }
+
     public DatagramSocket getSocket() {
-        return socket;
+        return this.node.getSocket();
     }
 
     public Node getNode() {
         return node;
     }
 
-    public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential) {
-        this.node = new Node();
-        node.setCredential(nodeCredential);
-        node.setFileList(createFileList());
-        node.setRoutingTable(new ArrayList());
-        node.setStatTable(new ArrayList());
-        node.setQueryRoutingTable(new HashMap<String, Credential>());
-        this.bootstrapServerCredential = bootstrapServerCredential;
-        // TODO:socket creation should be in the node constructor
-        try {
-            this.socket = new DatagramSocket(this.node.getCredential().getPort());
-        } catch (SocketException e) {
-            this.socket = null;
-            e.printStackTrace();
-        }
-    }
-
     public void register() {
         RegisterRequest registerRequest = new RegisterRequest(node.getCredential());
         String msg = registerRequest.getMessageAsString(Constant.commandConstants.get("REG"));
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
+            this.getNode().getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -62,7 +56,7 @@ public class NodeRegistrar {
         UnregisterRequest unregisterRequest = new UnregisterRequest(node.getCredential());
         String msg = unregisterRequest.getMessageAsString(Constant.commandConstants.get("UNREG"));
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
+            this.getNode().getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
