@@ -15,14 +15,11 @@ public class Parser {
 
     public static Message parse(String message, Credential senderCredential) {
 
-        System.out.println("Message received : " + message);
+        System.out.println("\nMessage received : " + message);
         StringTokenizer st = new StringTokenizer(message, " ");
 
         String length = st.nextToken();
         String command = st.nextToken();
-//        System.out.println(length+"===length");
-//        System.out.println(message);
-//        System.out.println(command+"====comamnd");
 
         if (command.equals(Constant.commandConstants.get("REG"))) {
             String ip = st.nextToken();

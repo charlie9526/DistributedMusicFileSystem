@@ -13,11 +13,12 @@ public class Node implements Observer {
     private List<String> fileList;
     private List<Credential> routingTable;
     private List<StatRecord> statTable;
-    private Hashtable<String, SearchRequest> queryDetailsTable ;
+    private Hashtable<String, SearchRequest> queryDetailsTable;
     private Map<String, Credential> queryRoutingTable;
     private DatagramSocket socket;
+    private ArrayList<String> successQueryIDs;
 
-    public Node(DatagramSocket socket,Credential credential,List<String> fileList){
+    public Node(DatagramSocket socket, Credential credential, List<String> fileList) {
         this.socket = socket;
         this.credential = credential;
         this.fileList = fileList;
@@ -25,22 +26,34 @@ public class Node implements Observer {
         this.queryDetailsTable = new Hashtable<>();
         this.routingTable = new ArrayList();
         this.queryRoutingTable = new HashMap<String, Credential>();
+        this.successQueryIDs = new ArrayList<String>();
+    }
+
+    public Boolean checkSuccessQuery(String query) {
+        if (this.successQueryIDs.contains(query)) {
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<String> getSuccessQueryIDs() {
+        return successQueryIDs;
+    }
+
+    public void addSuccessQuery(String query) {
+        this.successQueryIDs.add(query);
     }
 
     public Credential getCredential() {
         return credential;
     }
 
-    public DatagramSocket getSocket(){
+    public DatagramSocket getSocket() {
         return this.socket;
     }
 
     public Map<String, Credential> getQueryRoutingTable() {
         return queryRoutingTable;
-    }
-
-    public void setQueryRoutingTable(Map<String, Credential> queryRoutingTable) {
-        this.queryRoutingTable = queryRoutingTable;
     }
 
     public void addQueryRecordToRouting(String queryId, Credential from) {
@@ -51,7 +64,7 @@ public class Node implements Observer {
         return this.queryRoutingTable.remove(queryId);
     }
 
-    public Credential getQueryRoutingRecord(String queryId){
+    public Credential getQueryRoutingRecord(String queryId) {
         return this.queryRoutingTable.get(queryId);
     }
 
@@ -83,28 +96,26 @@ public class Node implements Observer {
         this.statTable = statTable;
     }
 
-    public Hashtable<String,SearchRequest> getQueryDetailsTable(){
+    public Hashtable<String, SearchRequest> getQueryDetailsTable() {
         return this.queryDetailsTable;
     }
 
-    public void addSearchQuery(SearchRequest searchQuery){
-        this.queryDetailsTable.put(searchQuery.getSearchQueryID(),searchQuery);
+    public void addSearchQuery(SearchRequest searchQuery) {
+        this.queryDetailsTable.put(searchQuery.getSearchQueryID(), searchQuery);
     }
 
-    public void removeSearchQuery(String searchQueryID){
-        synchronized (this.queryDetailsTable){
-            this.queryDetailsTable.remove(searchQueryID);
-        }
-        System.out.println("Search Query "+searchQueryID+" is removed from Query Detasils table !");
+    public void removeSearchQuery(String searchQueryID) {
+        this.queryDetailsTable.remove(searchQueryID);
+        System.out.println("Search Query " + searchQueryID + " is removed from Query Detasils table !");
     }
 
-    public SearchRequest getSearchQueryByID(String ID){
+    public SearchRequest getSearchQueryByID(String ID) {
         return this.queryDetailsTable.get(ID);
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("Search query "+(String) arg+" is expired !");
+        System.out.println("Search query " + (String) arg + " is expired !");
         removeSearchQuery((String) arg);
     }
 }

@@ -28,7 +28,7 @@ public class DSProgramme {
         Credential bootstrapServerCredential = new Credential(bootstrapIp, Constant.portConstants.get("PORT_BOOTSTRAP_SERVER"), Constant.usernameConstants.get("USERNAME_BOOTSTRAP_SERVER"));
         Map<Integer, String> searchQueryTable = new HashMap<>();
 
-        List<String> searchQueries = Arrays.asList("Adventures_of_Tintin", "Harry_Potter","American_Pickers");
+        List<String> searchQueries = Arrays.asList("Adventures_of_Tintin", "Harry_Potter","American_Pickers","Twilight");
         Collections.shuffle(searchQueries);
 
 //        Generate self credentials

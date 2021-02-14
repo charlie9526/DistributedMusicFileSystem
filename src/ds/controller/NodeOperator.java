@@ -23,7 +23,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     private DatagramSocket socket;
     private NodeRegistrar nodeRegistrar;
 
-    public NodeOperator(Credential nodeCredential,NodeRegistrar nodeRegistrar) {
+    public NodeOperator(Credential nodeCredential, NodeRegistrar nodeRegistrar) {
         this.nodeRegistrar = nodeRegistrar;
         this.node = nodeRegistrar.getNode();
         this.start();
@@ -32,7 +32,11 @@ public class NodeOperator implements NodeOperations, Runnable {
     public Node getNode() {
         return node;
     }
-    public NodeRegistrar getNodeRegistrar(){return this.nodeRegistrar;}
+
+    public NodeRegistrar getNodeRegistrar() {
+        return this.nodeRegistrar;
+    }
+
     @Override
     public void run() {
         System.out.println("Server " + this.node.getCredential().getUsername() + " created at " + this.node.getCredential().getPort() + ". Waiting for incoming data...");
@@ -55,7 +59,7 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     public void start() {
         socket = nodeRegistrar.getSocket();
-        if (socket!=null){
+        if (socket != null) {
             new Thread(this).start();
         }
     }
@@ -107,16 +111,17 @@ public class NodeOperator implements NodeOperations, Runnable {
     @Override
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
         String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
-        if ((this.getNode().getCredential().getIp()!=searchRequest.getTriggeredCredentials().getIp()) && this.getNode().getCredential().getPort()!=searchRequest.getTriggeredCredentials().getPort()){
-            this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(),searchRequest.getSenderCredentials());
+        if ((this.getNode().getCredential().getIp() != searchRequest.getTriggeredCredentials().getIp()) && this.getNode().getCredential().getPort() != searchRequest.getTriggeredCredentials().getPort()) {
+            this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(), searchRequest.getSenderCredentials());
             System.out.println("Query Record Added=======>");
         }
         try {
-            socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
-            if ((this.getNode().getCredential().getIp()==searchRequest.getTriggeredCredentials().getIp()) && this.getNode().getCredential().getPort()==searchRequest.getTriggeredCredentials().getPort()){
-                node.addSearchQuery(searchRequest);
-                System.out.println(">>>>>>>>>>>>>>>>"+this.getNode().getQueryDetailsTable().size());
-                System.out.println(">>>"+TimeKeeperSingleton.getTimeKeeper().getNodeListSize());
+            synchronized (node.getQueryDetailsTable()) {
+                System.out.println("Send SER request message to " + sendCredentials.getIp() + " : " + sendCredentials.getPort());
+                socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
+                if ((!node.checkSuccessQuery(searchRequest.getSearchQueryID())) && (node.getCredential().getIp() == searchRequest.getTriggeredCredentials().getIp()) && node.getCredential().getPort() == searchRequest.getTriggeredCredentials().getPort()) {
+                    node.addSearchQuery(searchRequest);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,7 +129,7 @@ public class NodeOperator implements NodeOperations, Runnable {
     }
 
     @Override
-    public void searchOk(SearchResponse searchResponse,Credential receiverCredentials) {
+    public void searchOk(SearchResponse searchResponse, Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
             System.out.println("Search OOKKK");
@@ -132,7 +137,7 @@ public class NodeOperator implements NodeOperations, Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
     }
 
     @Override
@@ -196,17 +201,22 @@ public class NodeOperator implements NodeOperations, Runnable {
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
-                if((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
-                    Credential queryFrom=this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
+                if ((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
+                    Credential queryFrom = this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
                     searchResponse.setSenderCredentials(node.getCredential());
                     System.out.println("Query routing table record is deleted========>");
                     searchOk(searchResponse, queryFrom);
-                }else if(node.getSearchQueryByID(searchResponse.getSequenceNo())!=null){
-                    node.removeSearchQuery(searchResponse.getSequenceNo());
+                } else if (node.getSearchQueryByID(searchResponse.getSequenceNo()) != null) {
+                    synchronized (node.getSuccessQueryIDs()) {
+                        node.addSuccessQuery(searchResponse.getSequenceNo());
+                    }
+                    synchronized (node.getQueryDetailsTable()) {
+                        node.removeSearchQuery(searchResponse.getSequenceNo());
+                    }
                     System.out.println("--------------------------------------------------------");
                     System.out.println(searchResponse.toString());
                     System.out.println("--------------------------------------------------------");
-                }else{
+                } else {
                     System.out.println("File already recieved or time is expired.");
                 }
             }
@@ -261,31 +271,30 @@ public class NodeOperator implements NodeOperations, Runnable {
 
     @Override
     public void triggerSearchRequest(SearchRequest searchRequest) {
-        System.out.println("\nTriggered search request for " + searchRequest.getFileName());
+        System.out.println("Triggered search request for " + searchRequest.getFileName());
         //search file in file collection
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             System.out.println("File is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-            SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult,node.getCredential());
+            SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
                 System.out.println("Send SEARCHOK response message");
-                searchOk(searchResponse,searchRequest.getSenderCredentials());
+                searchOk(searchResponse, searchRequest.getSenderCredentials());
             }
-        } else if(!checkFileInCache()) {
+        } else if (!checkFileInCache()) {
             //make search response and send call searchOK
             searchRequest.setHops(searchRequest.incHops());
             // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
             //     node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
             // }
-            
+
             //TODO: not send to all records of routing table,only send to subset from that that randomly picked
-            if (node.getRoutingTable().size()>0){
+            if (node.getRoutingTable().size() > 0) {
                 for (Credential credential : node.getRoutingTable()) {
                     if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp() && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
                         search(searchRequest, credential);
-                        System.out.println("Send SER request message to " + credential.getIp() + " : " + credential.getPort());
                     }
                 }
             }
