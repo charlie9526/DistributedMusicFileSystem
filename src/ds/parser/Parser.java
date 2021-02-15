@@ -79,7 +79,7 @@ public class Parser {
             String ip = st.nextToken();//file request triggered node's ip
             int port = Integer.parseInt(st.nextToken());
             String fileName = st.nextToken();
-            int hops = Integer.parseInt(st.nextToken());
+            int hops = Integer.parseInt(st.nextToken().replace("\n",""));
             Credential crd = new Credential(ip, port, null);
             return new SearchRequest(seqNum, crd, fileName, hops,senderCredential);
 

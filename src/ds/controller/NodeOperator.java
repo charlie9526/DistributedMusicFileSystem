@@ -132,7 +132,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     public void searchOk(SearchResponse searchResponse, Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
-            System.out.println("Search OOKKK");
+            System.out.println("Search OK response is send to -"+ receiverCredentials.getIp()+" - "+receiverCredentials.getPort());
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length, InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -203,15 +203,14 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
-                //update cache table
                 Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
                 Credential owner = searchResponse.getCredential();
                 HashSet<String> fileList;
 
-                if (cacheTable.containsKey(owner)){
+                if (cacheTable.containsKey(owner)) {
                     fileList = cacheTable.get(owner);
                     fileList.addAll(searchResponse.getFileList());
-                }else{
+                } else {
                     fileList = new HashSet<>(searchResponse.getFileList());
                     cacheTable.put(owner, fileList);
                 }
@@ -285,28 +284,27 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         //TODO:check cache table to check whether record is there for the searching file
         Enumeration credentialsList = cacheTable.keys();
         Hashtable<Credential, List<String>> searchResult = new Hashtable<>();
-        while(credentialsList.hasMoreElements()){
+        while (credentialsList.hasMoreElements()) {
             Credential searchNode = (Credential) credentialsList.nextElement();
             List<String> fileList = new ArrayList<>(cacheTable.get(searchNode));
             Pattern pattern = Pattern.compile(fileName);
             fileList = fileList.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
-            if(!fileList.isEmpty()) {
+            if (!fileList.isEmpty()) {
                 searchResult.put(searchNode, fileList);
                 return searchResult;
             }
         }
-        System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
         return searchResult;
     }
 
-    public void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable){
+    public void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable) {
         System.out.println("Cache table updated as :");
         System.out.println("--------------------------------------------------------");
         System.out.println("IP \t \t \t PORT");
         Enumeration keys = cacheTable.keys();
-        while ((keys.hasMoreElements())){
+        while ((keys.hasMoreElements())) {
             Credential node = (Credential) keys.nextElement();
-            System.out.println(node.getIp() + "\t \t \t" + node.getPort() + " ===> "+Arrays.toString(cacheTable.get(node).toArray()));
+            System.out.println(node.getIp() + "\t \t \t" + node.getPort() + " ===> " + Arrays.toString(cacheTable.get(node).toArray()));
         }
         System.out.println("--------------------------------------------------------");
     }
@@ -314,39 +312,27 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void triggerSearchRequest(SearchRequest searchRequest) {
         System.out.println("Triggered search request for " + searchRequest.getFileName());
-        //search file in file collection
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
-            System.out.println("File "+searchRequest.getFileName()+" is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+            System.out.println("File " + searchRequest.getFileName() + " is available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(), node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
                 System.out.println(searchResponse.toString());
             } else {
-                System.out.println("Send SEARCHOK response message");
                 searchOk(searchResponse, searchRequest.getSenderCredentials());
             }
         } else {
+            System.out.println("File is not available in the node itself" + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             Hashtable<Credential, List<String>> cacheResult = checkFilesInCache(searchRequest.getFileName(), this.node.getCacheTable());
-
-            if(!cacheResult.isEmpty()){
+            if (!cacheResult.isEmpty()) {
+                System.out.println("File is available in the cache" + node.getCredential().getIp() + " : " + node.getCredential().getPort());
                 Credential fileOwner = cacheResult.keys().nextElement();
                 List<String> fileList = cacheResult.get(fileOwner);
-                System.out.println(fileList.toArray());
                 SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), fileList.size(), fileOwner, searchRequest.getHops(), fileList, node.getCredential());
-                if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
-                    System.out.println(searchResponse.toString());
-                } else {
-                    System.out.println("Send SEARCHOK response message");
-                    searchOk(searchResponse,searchRequest.getSenderCredentials());
-                }
-            }else {
-                //make search response and send call searchOK
+                searchOk(searchResponse, searchRequest.getSenderCredentials());
+            } else {
+                System.out.println("File is not available in the cache" + node.getCredential().getIp() + " : " + node.getCredential().getPort());
                 searchRequest.setHops(searchRequest.incHops());
-                // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
-                //     node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
-                // }
-
-                //TODO: not send to all records of routing table,only send to subset from that that randomly picked
                 if (node.getRoutingTable().size() > 0) {
                     for (Credential credential : node.getRoutingTable()) {
                         if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp() && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
@@ -361,7 +347,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void update(Observable o, Object arg) {
         SearchRequest sr = (SearchRequest) arg;
-        System.out.println("Search query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
+        System.out.println("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
         node.removeSearchQuery(sr.getSearchQueryID());
         if (sr.getRetriedCount() < 2) {
             sr.incrementExpiredTime();

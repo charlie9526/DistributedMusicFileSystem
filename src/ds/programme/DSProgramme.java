@@ -48,27 +48,28 @@ public class DSProgramme {
         timeKeeper.addNodeToList(nodeRegistrar.getNode());
         timeKeeper.start();
 
-        while (true) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (nodeOperator.getNodeRegistrar().isRegOK()) {
-                for (int i = 0; i < searchQueries.size(); i++) {
-//                    System.out.println(searchQueries.get(i));
-                    String uuid = UUID.randomUUID().toString()+"-"+nodeOperator.getNode().getCredential().getUsername();
-                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(),searchQueries.get(i) , 0,nodeOperator.getNode().getCredential());
-                    nodeOperator.triggerSearchRequest(searchRequest);
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                break;
-            }
-        }
+//        while (true) {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            if (nodeOperator.getNodeRegistrar().isRegOK()) {
+//                for (int i = 0; i < searchQueries.size(); i++) {
+//                    System.out.println("");
+////                    System.out.println(searchQueries.get(i));
+//                    String uuid = UUID.randomUUID().toString()+"-"+nodeOperator.getNode().getCredential().getUsername();
+//                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(),searchQueries.get(i) , 0,nodeOperator.getNode().getCredential());
+//                    nodeOperator.triggerSearchRequest(searchRequest);
+//                    try {
+//                        Thread.sleep(5000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                break;
+//            }
+//        }
 
         while (true) ;
     }

@@ -115,7 +115,7 @@ public class Node {
 
     public void removeSearchQuery(String searchQueryID) {
         this.queryDetailsTable.remove(searchQueryID);
-        System.out.println("Search Query " + searchQueryID + " is removed from Query Detasils table !");
+        System.out.println("Search Query " + searchQueryID + " is removed from Query Detasils table !\n");
     }
 
     public SearchRequest getSearchQueryByID(String ID) {
