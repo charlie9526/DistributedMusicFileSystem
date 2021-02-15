@@ -3,20 +3,33 @@ package ds.communication.response;
 import java.util.List;
 import ds.communication.Message;
 import ds.credential.Credential;
+
 public class SearchResponse extends Message {
 
     private String sequenceNo;
     private int noOfFiles;
-    private Credential credential;
+    private Credential credential;// credentials of file having node
     private int hops;
     private List<String> fileList;
+    private Credential senderCredentials;
 
-    public SearchResponse(String sequenceNo, int noOfFiles, Credential credential, int hops, List<String> fileList) {
+    public SearchResponse(String sequenceNo, int noOfFiles, Credential credential, int hops, List<String> fileList,
+            Credential senderCredentials) {
         this.sequenceNo = sequenceNo;
         this.noOfFiles = noOfFiles;
         this.credential = credential;
         this.hops = hops;
         this.fileList = fileList;
+        this.senderCredentials = senderCredentials;
+
+    }
+
+    public Credential getSenderCredentials() {
+        return senderCredentials;
+    }
+
+    public void setSenderCredentials(Credential senderCredentials) {
+        this.senderCredentials = senderCredentials;
     }
 
     public int getNoOfFiles() {
