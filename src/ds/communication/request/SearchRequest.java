@@ -12,22 +12,34 @@ public class SearchRequest extends Message {
     private Credential triggeredCredential;
     private String fileName;
     private int hops;
+    private Credential senderCredentials;
     private Timestamp manufacturedTime;
     private Timestamp expiredTime;
+    private int retriedCount;
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
 
-    public SearchRequest(String searchQueryID, Credential triggeredCredential, String fileName, int hops) {
+    public SearchRequest(String searchQueryID, Credential triggeredCredential, String fileName, int hops, Credential senderCredentials) {
         this.searchQueryID = searchQueryID;
         this.triggeredCredential = triggeredCredential;
         this.fileName = fileName;
         this.hops = hops;
+        this.senderCredentials = senderCredentials;
         this.manufacturedTime = new Timestamp(System.currentTimeMillis());
-        System.out.println(sdf.format(this.manufacturedTime));
-        this.expiredTime = new Timestamp(this.manufacturedTime.getTime()+30);
-        System.out.println(sdf.format(this.expiredTime));
+//        System.out.println(sdf.format(this.manufacturedTime));
+        this.expiredTime = new Timestamp(this.manufacturedTime.getTime() + 10000);
+//        System.out.println(sdf.format(this.expiredTime));
+        this.retriedCount = 0;
     }
 
-    public Credential getCredential() {
+    public Credential getSenderCredentials() {
+        return senderCredentials;
+    }
+
+    public void setSenderCredentials(Credential senderCredentials) {
+        this.senderCredentials = senderCredentials;
+    }
+
+    public Credential getTriggeredCredentials() {
         return triggeredCredential;
     }
 
@@ -35,12 +47,24 @@ public class SearchRequest extends Message {
         return expiredTime;
     }
 
-    public void setCredential(Credential credential) {
+    public void incrementExpiredTime() {
+        this.expiredTime = new Timestamp(this.expiredTime.getTime() + 10000);
+    }
+
+    public void setTriggeredCredentials(Credential credential) {
         this.triggeredCredential = credential;
     }
 
     public String getSearchQueryID() {
         return searchQueryID;
+    }
+
+    public int getRetriedCount() {
+        return retriedCount;
+    }
+
+    public void incrementRetriedCount() {
+        this.retriedCount = this.retriedCount + 1;
     }
 
     public void setSearchQueryID(String searchQueryID) {
@@ -65,7 +89,7 @@ public class SearchRequest extends Message {
 
     @Override
     public String getMessageAsString(String message) {
-        message += " " + searchQueryID + " " + this.getCredential().getIp() + " " + this.getCredential().getPort() + " " + this.getFileName() + " " + this.getHops();
+        message += " " + searchQueryID + " " + this.getTriggeredCredentials().getIp() + " " + this.getTriggeredCredentials().getPort() + " " + this.getFileName() + " " + this.getHops();
         return super.getMessageAsString(message);
     }
 

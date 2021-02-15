@@ -31,13 +31,18 @@ public class TimeKeeperSingleton extends Observable implements Runnable{
     public void run(){
         while (true){
             for (Node node : nodeList){
-                HashMap <String, SearchRequest> queryDetailsTable = node.getQueryDetailsTable();
-//                System.out.println(">>>>>>time keepr>>>>>>>>>>"+queryDetailsTable.size());
-                for(Map.Entry<String,SearchRequest> entry : queryDetailsTable.entrySet()){
-                    Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-                    if (currentTime.getTime()>entry.getValue().getExpiredTime().getTime()){
-                        setChanged();
-                        notifyObservers(entry.getKey());
+                synchronized (node.getQueryDetailsTable()){
+                    Set<String> keySet = node.getQueryDetailsTable().keySet();
+                    ArrayList<String> keyArray = new ArrayList<String>();
+                    for(String key : keySet){
+                        keyArray.add(key);
+                    }
+                    for(String key : keyArray){
+                        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+                        if (currentTime.getTime()>node.getQueryDetailsTable().get(key).getExpiredTime().getTime()){
+                            setChanged();
+                            notifyObservers(node.getQueryDetailsTable().get(key));
+                        }
                     }
                 }
             }

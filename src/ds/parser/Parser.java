@@ -15,14 +15,11 @@ public class Parser {
 
     public static Message parse(String message, Credential senderCredential) {
 
-        System.out.println("Message received : " + message);
+        System.out.println("\nMessage received : " + message);
         StringTokenizer st = new StringTokenizer(message, " ");
 
         String length = st.nextToken();
         String command = st.nextToken();
-//        System.out.println(length+"===length");
-//        System.out.println(message);
-//        System.out.println(command+"====comamnd");
 
         if (command.equals(Constant.commandConstants.get("REG"))) {
             String ip = st.nextToken();
@@ -79,12 +76,12 @@ public class Parser {
 
         } else if (command.equals(Constant.commandConstants.get("SEARCH"))) {
             String seqNum = st.nextToken();
-            String ip = st.nextToken();
+            String ip = st.nextToken();//file request triggered node's ip
             int port = Integer.parseInt(st.nextToken());
             String fileName = st.nextToken();
             int hops = Integer.parseInt(st.nextToken());
             Credential crd = new Credential(ip, port, null);
-            return new SearchRequest(seqNum, crd, fileName, hops);
+            return new SearchRequest(seqNum, crd, fileName, hops,senderCredential);
 
         } else if (command.equals(Constant.commandConstants.get("SEARCHOK"))) {
             String searchQueryID = st.nextToken();
@@ -99,7 +96,7 @@ public class Parser {
                 }
             }
             Credential endNodeCredentials = new Credential(ip, port, null);
-            return new SearchResponse(searchQueryID, numOfFiles, endNodeCredentials, hops, fileList);
+            return new SearchResponse(searchQueryID, numOfFiles, endNodeCredentials, hops, fileList,senderCredential);
 
         } else if (command.equals(Constant.codeConstants.get("ERROR"))) {
             return new ErrorResponse();
