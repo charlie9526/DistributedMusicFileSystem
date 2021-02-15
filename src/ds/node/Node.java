@@ -17,6 +17,7 @@ public class Node {
     private Map<String, Credential> queryRoutingTable;
     private DatagramSocket socket;
     private ArrayList<String> successQueryIDs;
+    private Hashtable<Credential, HashSet<String>> cacheTable;
 
     public Node(DatagramSocket socket, Credential credential, List<String> fileList) {
         this.socket = socket;
@@ -34,6 +35,14 @@ public class Node {
             return true;
         }
         return false;
+    }
+
+    public Hashtable<Credential, HashSet<String>> getCacheTable() {
+        return cacheTable;
+    }
+
+    public void setCacheTable(Hashtable<Credential, HashSet<String>> cacheTable) {
+        this.cacheTable = cacheTable;
     }
 
     public ArrayList<String> getSuccessQueryIDs() {

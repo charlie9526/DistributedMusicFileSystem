@@ -5,6 +5,8 @@ import ds.communication.request.SearchRequest;
 import ds.communication.response.SearchResponse;
 import ds.credential.Credential;
 
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 
 public interface NodeOperations {
@@ -31,6 +33,9 @@ public interface NodeOperations {
 
     void printRoutingTable(List<Credential> routingTable);
 
-    boolean checkFileInCache();
+    void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable);
+
+    Hashtable<Credential, List<String>> checkFilesInCache(String fileName, Hashtable<Credential, HashSet<String>> cacheTable);
+
 
 }

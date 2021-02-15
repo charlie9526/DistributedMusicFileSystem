@@ -181,6 +181,8 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                 //TODO: check whether the received nodes are alive before adding to routing table
                 this.node.setRoutingTable(routingTable);
                 this.nodeRegistrar.setRegOK(true);
+
+                this.node.setCacheTable(new Hashtable<>());
             }
 
         } else if (response instanceof UnregisterResponse) {
@@ -201,6 +203,21 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
                 System.out.println("Some other error");
             } else {
+                //update cache table
+                Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
+                Credential owner = searchResponse.getCredential();
+                HashSet<String> fileList;
+
+                if (cacheTable.containsKey(owner)){
+                    fileList = cacheTable.get(owner);
+                    fileList.addAll(searchResponse.getFileList());
+                }else{
+                    fileList = new HashSet<>(searchResponse.getFileList());
+                    cacheTable.put(owner, fileList);
+                }
+
+                printCacheTable(cacheTable);
+
                 if ((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
                     Credential queryFrom = this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
                     searchResponse.setSenderCredentials(node.getCredential());
@@ -262,11 +279,36 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         System.out.println("--------------------------------------------------------");
     }
 
+
     @Override
-    public boolean checkFileInCache() {
-        //TODO:check cache table to check whether record is there for the searching file 
+    public Hashtable<Credential, List<String>> checkFilesInCache(String fileName, Hashtable<Credential, HashSet<String>> cacheTable) {
+        //TODO:check cache table to check whether record is there for the searching file
+        Enumeration credentialsList = cacheTable.keys();
+        Hashtable<Credential, List<String>> searchResult = new Hashtable<>();
+        while(credentialsList.hasMoreElements()){
+            Credential searchNode = (Credential) credentialsList.nextElement();
+            List<String> fileList = new ArrayList<>(cacheTable.get(searchNode));
+            Pattern pattern = Pattern.compile(fileName);
+            fileList = fileList.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
+            if(!fileList.isEmpty()) {
+                searchResult.put(searchNode, fileList);
+                return searchResult;
+            }
+        }
         System.out.println("File is not available at " + node.getCredential().getIp() + " : " + node.getCredential().getPort());
-        return false;
+        return searchResult;
+    }
+
+    public void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable){
+        System.out.println("Cache table updated as :");
+        System.out.println("--------------------------------------------------------");
+        System.out.println("IP \t \t \t PORT");
+        Enumeration keys = cacheTable.keys();
+        while ((keys.hasMoreElements())){
+            Credential node = (Credential) keys.nextElement();
+            System.out.println(node.getIp() + "\t \t \t" + node.getPort() + " ===> "+Arrays.toString(cacheTable.get(node).toArray()));
+        }
+        System.out.println("--------------------------------------------------------");
     }
 
     @Override
@@ -283,18 +325,33 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                 System.out.println("Send SEARCHOK response message");
                 searchOk(searchResponse, searchRequest.getSenderCredentials());
             }
-        } else if (!checkFileInCache()) {
-            //make search response and send call searchOK
-            searchRequest.setHops(searchRequest.incHops());
-            // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
-            //     node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
-            // }
+        } else {
+            Hashtable<Credential, List<String>> cacheResult = checkFilesInCache(searchRequest.getFileName(), this.node.getCacheTable());
 
-            //TODO: not send to all records of routing table,only send to subset from that that randomly picked
-            if (node.getRoutingTable().size() > 0) {
-                for (Credential credential : node.getRoutingTable()) {
-                    if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp() && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
-                        search(searchRequest, credential);
+            if(!cacheResult.isEmpty()){
+                Credential fileOwner = cacheResult.keys().nextElement();
+                List<String> fileList = cacheResult.get(fileOwner);
+                System.out.println(fileList.toArray());
+                SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), fileList.size(), fileOwner, searchRequest.getHops(), fileList, node.getCredential());
+                if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp() && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
+                    System.out.println(searchResponse.toString());
+                } else {
+                    System.out.println("Send SEARCHOK response message");
+                    searchOk(searchResponse,searchRequest.getSenderCredentials());
+                }
+            }else {
+                //make search response and send call searchOK
+                searchRequest.setHops(searchRequest.incHops());
+                // if (searchRequest.getCredential().getIp() != node.getCredential().getIp() | searchRequest.getCredential().getPort() != node.getCredential().getPort()) {
+                //     node.addQueryRecordToRouting(searchRequest.getSequenceNo(), from);
+                // }
+
+                //TODO: not send to all records of routing table,only send to subset from that that randomly picked
+                if (node.getRoutingTable().size() > 0) {
+                    for (Credential credential : node.getRoutingTable()) {
+                        if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp() && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
+                            search(searchRequest, credential);
+                        }
                     }
                 }
             }
