@@ -18,9 +18,11 @@ public class Node {
     private DatagramSocket socket;
     private ArrayList<String> successQueryIDs;
     private Hashtable<Credential, HashSet<String>> cacheTable;
+    private DatagramSocket pingSocket;
 
-    public Node(DatagramSocket socket, Credential credential, List<String> fileList) {
+    public Node(DatagramSocket socket, Credential credential, List<String> fileList,DatagramSocket pingSocket) {
         this.socket = socket;
+        this.pingSocket=pingSocket;
         this.credential = credential;
         this.fileList = fileList;
         this.statTable = new ArrayList();
@@ -59,6 +61,10 @@ public class Node {
 
     public DatagramSocket getSocket() {
         return this.socket;
+    }
+
+    public DatagramSocket getPingSocket(){
+        return this.pingSocket;
     }
 
     public Map<String, Credential> getQueryRoutingTable() {

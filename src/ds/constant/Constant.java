@@ -17,6 +17,8 @@ public class Constant {
         portConstants.put("PORT_BOOTSTRAP_SERVER",55555);
         portConstants.put("MIN_PORT_NODE",40000);
         portConstants.put("MAX_PORT_NODE",50000);
+        portConstants.put("PING_TIMEOUT",5000);
+
 
         codeConstants.put("ERROR_CANNOT_REGISTER",9996);
         codeConstants.put("ERROR_DUPLICATE_IP",9997);
@@ -36,5 +38,7 @@ public class Constant {
         commandConstants.put("SEARCH","SER");
         commandConstants.put("SEARCHOK","SEROK");
         commandConstants.put("ERROR","ERROR");
+        commandConstants.put("PING","PING");
+        commandConstants.put("PONG","PONG");
     }
 }

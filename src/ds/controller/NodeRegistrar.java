@@ -21,14 +21,17 @@ public class NodeRegistrar {
     private Credential bootstrapServerCredential;
     private Boolean regOK = false;
 
-    public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential) {
+    public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential,int pingPort) {
         DatagramSocket socket = null;
+        DatagramSocket pingSocket=null;
         try {
             socket = new DatagramSocket(nodeCredential.getPort());
+            pingSocket=new DatagramSocket(pingPort);
+            pingSocket.setSoTimeout(Constant.portConstants.get("PING_TIMEOUT"));
         } catch (SocketException e) {
             e.printStackTrace();
         }finally {
-            this.node = new Node(socket,nodeCredential,createFileList());
+            this.node = new Node(socket,nodeCredential,createFileList(),pingSocket);
         }
         this.bootstrapServerCredential = bootstrapServerCredential;
     }
