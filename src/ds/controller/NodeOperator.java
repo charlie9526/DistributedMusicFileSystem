@@ -281,9 +281,9 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     }
 
     public void download(SearchResponse response){
-        FileDownloader fD = new FileDownloader(response.getCredential().getIp(), response.getCredential().getPort());
+        FileDownloader fD = new FileDownloader();
         try {
-            fD.downloadFile("TestFile123");
+            fD.downloadFile(response.getFileList().get(0),response.getCredential());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -15,14 +15,13 @@ import java.security.NoSuchAlgorithmException;
 public class FileDownloader {
 
     public void downloadFile(String fileName, Credential toCred) throws IOException {
-        URL obj = new URL(toCred.getIp()+":"+toCred.getIp()+"?filename="+fileName);
+        URL obj = new URL(toCred.getIp() + ":" + toCred.getIp() + "?filename=" + fileName);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();
         System.out.println("GET Response Code :: " + responseCode);
         if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    con.getInputStream()));
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
             StringBuffer response = new StringBuffer();
 
@@ -39,10 +38,9 @@ public class FileDownloader {
             byte[] hash = digest.digest(response.toString().getBytes(StandardCharsets.UTF_8));
             BigInteger noHash = new BigInteger(1, hash);
             String hashStr = noHash.toString(16);
-            System.out.println("The hash recieved is - "+hashStr.toString());
+            System.out.println("The hash recieved is - " + hashStr.toString());
         } else {
             System.out.println("GET request not worked");
         }
     }
 }
-
