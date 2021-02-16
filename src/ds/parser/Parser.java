@@ -100,6 +100,8 @@ public class Parser {
 
         } else if (command.equals(Constant.codeConstants.get("ERROR"))) {
             return new ErrorResponse();
+        }else if(command.equals(Constant.commandConstants.get("PING"))){
+            return new PingRequest(senderCredential);
         }
 
         return null;

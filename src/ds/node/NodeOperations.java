@@ -1,6 +1,7 @@
 package ds.node;
 
 import ds.communication.Message;
+import ds.communication.request.PingRequest;
 import ds.communication.request.SearchRequest;
 import ds.communication.response.SearchResponse;
 import ds.credential.Credential;
@@ -36,6 +37,8 @@ public interface NodeOperations {
     void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable);
 
     Hashtable<Credential, List<String>> checkFilesInCache(String fileName, Hashtable<Credential, HashSet<String>> cacheTable);
+
+    void sendPongMessage(PingRequest request);
 
 
 }
