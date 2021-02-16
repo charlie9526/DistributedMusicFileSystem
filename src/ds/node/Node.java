@@ -1,5 +1,6 @@
 package ds.node;
 
+import com.sun.net.httpserver.HttpServer;
 import ds.communication.request.SearchRequest;
 import ds.credential.Credential;
 import ds.history.StatRecord;

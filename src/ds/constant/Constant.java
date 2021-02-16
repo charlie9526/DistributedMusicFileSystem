@@ -15,8 +15,10 @@ public class Constant {
         IPConstants.put("IP_BOOTSTRAP_SERVER","127.0.0.1");
 
         portConstants.put("PORT_BOOTSTRAP_SERVER",55555);
-        portConstants.put("MIN_PORT_NODE",40000);
-        portConstants.put("MAX_PORT_NODE",50000);
+        portConstants.put("MIN_PORT_NODE",4000);
+        portConstants.put("MAX_PORT_NODE",5000);
+        portConstants.put("MIN_REST_PORT_NODE",8000);
+        portConstants.put("MAX_REST_PORT_NODE",9000);
 
         codeConstants.put("ERROR_CANNOT_REGISTER",9996);
         codeConstants.put("ERROR_DUPLICATE_IP",9997);
