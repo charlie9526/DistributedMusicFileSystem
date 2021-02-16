@@ -3,6 +3,7 @@ package ds.node;
 import com.sun.net.httpserver.HttpServer;
 import ds.communication.request.SearchRequest;
 import ds.credential.Credential;
+import ds.downloadAPI.HttpResthandler;
 import ds.history.StatRecord;
 
 import java.net.DatagramSocket;
@@ -20,6 +21,8 @@ public class Node {
     private ArrayList<String> successQueryIDs;
     private Hashtable<Credential, HashSet<String>> cacheTable;
     private DatagramSocket pingSocket;
+    private HttpResthandler restAPI ;
+
 
     public Node(DatagramSocket socket, Credential credential, List<String> fileList,DatagramSocket pingSocket) {
         this.socket = socket;
@@ -38,6 +41,14 @@ public class Node {
             return true;
         }
         return false;
+    }
+
+    public HttpResthandler getRestAPI() {
+        return restAPI;
+    }
+
+    public void setRestAPI(HttpResthandler restAPI) {
+        this.restAPI = restAPI;
     }
 
     public Hashtable<Credential, HashSet<String>> getCacheTable() {

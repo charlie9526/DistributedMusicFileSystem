@@ -1,5 +1,7 @@
 package ds.downloadAPI;
 
+import ds.credential.Credential;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,14 +14,8 @@ import java.security.NoSuchAlgorithmException;
 
 public class FileDownloader {
 
-    private String downlaodURL;
-
-    public FileDownloader(String host, int port) {
-        this.downlaodURL = host + ":" + ((Integer) port).toString()+"/download";
-    }
-
-    public void downloadFile(String fileName) throws IOException {
-        URL obj = new URL(this.downlaodURL+"?filename="+fileName);
+    public void downloadFile(String fileName, Credential toCred) throws IOException {
+        URL obj = new URL(toCred.getIp()+":"+toCred.getIp()+"?filename="+fileName);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();

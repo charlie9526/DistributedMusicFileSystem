@@ -54,18 +54,15 @@ public class DSProgramme {
         timeKeeper.addObserver(nodeOperator);
         timeKeeper.addNodeToList(nodeRegistrar.getNode());
         timeKeeper.start();
+
         HttpResthandler restAPI = new HttpResthandler();
         try {
-            restAPI.up();
+            restAPI.up(restAPIPort,nodeOperator.getNode().getCredential().getIp());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        FileDownloader fD = new FileDownloader("http://localhost", 8000);
-        try {
-            fD.downloadFile("TestFile123");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        nodeOperator.getNode().setRestAPI(restAPI);
+
 
         Watchman.createWatchman(nodeRegistrar.getNode());
         Watchman.getWatchman().start();

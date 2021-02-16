@@ -5,6 +5,7 @@ import ds.communication.request.*;
 import ds.communication.response.*;
 import ds.constant.Constant;
 import ds.credential.Credential;
+import ds.downloadAPI.FileDownloader;
 import ds.node.Node;
 import ds.node.NodeOperations;
 import ds.parser.Parser;
@@ -276,6 +277,15 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         } else if (response instanceof ErrorResponse) {
             ErrorResponse errorResponse = (ErrorResponse) response;
             System.out.println(errorResponse.toString());
+        }
+    }
+
+    public void download(SearchResponse response){
+        FileDownloader fD = new FileDownloader(response.getCredential().getIp(), response.getCredential().getPort());
+        try {
+            fD.downloadFile("TestFile123");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

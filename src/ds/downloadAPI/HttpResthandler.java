@@ -17,9 +17,8 @@ import java.util.Map;
 import java.util.Random;
 
 public class HttpResthandler implements HttpHandler {
-
-    public void up() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+    public void up(int port, String host) throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(host,port), 0);
         server.createContext("/download", this);
         server.setExecutor(null); // creates a default executor
         server.start();
