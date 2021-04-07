@@ -40,5 +40,5 @@ public interface NodeOperations {
 
     void sendPongMessage(PingRequest request);
 
-
+    void printMessageStats();
 }

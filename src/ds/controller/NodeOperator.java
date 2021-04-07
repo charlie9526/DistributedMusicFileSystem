@@ -23,10 +23,16 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     private Node node;
     private DatagramSocket socket;
     private NodeRegistrar nodeRegistrar;
+    private Hashtable<String, Long> timeRecorder;
+    private int received;
+    private int forwarded;
+    private int answered;
+    private int backward;
 
     public NodeOperator(Credential nodeCredential, NodeRegistrar nodeRegistrar) {
         this.nodeRegistrar = nodeRegistrar;
         this.node = nodeRegistrar.getNode();
+        this.timeRecorder = new Hashtable<>();
         this.start();
     }
 
@@ -40,7 +46,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
     @Override
     public void run() {
-        System.out.println("Server " + this.node.getCredential().getUsername() + " created at "
+        Node.logMessage("Server " + this.node.getCredential().getUsername() + " created at "
                 + this.node.getCredential().getPort() + ". Waiting for incoming data...");
         byte buffer[];
         DatagramPacket datagramPacket;
@@ -83,6 +89,17 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     public void joinOk(Credential senderCredential) {
         JoinResponse joinResponse = new JoinResponse(0, node.getCredential());
         String msg = joinResponse.getMessageAsString(Constant.commandConstants.get("JOINOK"));
+
+        List<Credential> routingTable = this.node.getRoutingTable();
+        if(routingTable.size() == 2){
+            routingTable.remove(1);
+        }
+        routingTable.add(senderCredential);
+
+        printRoutingTable(routingTable);
+
+        this.node.setRoutingTable(routingTable);
+
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(senderCredential.getIp()), senderCredential.getPort()));
@@ -90,6 +107,8 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             e.printStackTrace();
         }
     }
+
+
 
     @Override
     public void leave(Credential neighbourCredential) {
@@ -119,14 +138,15 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     public void search(SearchRequest searchRequest, Credential sendCredentials) {
         String msg = searchRequest.getMessageAsString(Constant.commandConstants.get("SEARCH"));
         if ((this.getNode().getCredential().getIp() != searchRequest.getTriggeredCredentials().getIp())
-                && this.getNode().getCredential().getPort() != searchRequest.getTriggeredCredentials().getPort()) {
+                && this.getNode().getCredential().getPort() != searchRequest.getTriggeredCredentials().getPort()
+                    && this.getNode().getQueryRoutingRecord(searchRequest.getSearchQueryID()) != null) {
             this.getNode().addQueryRecordToRouting(searchRequest.getSearchQueryID(),
                     searchRequest.getSenderCredentials());
-            System.out.println("Query Record Added=======>");
+            Node.logMessage("Query Record Added=======>");
         }
         try {
             synchronized (node.getQueryDetailsTable()) {
-                System.out.println(
+                Node.logMessage(
                         "Send SER request message to " + sendCredentials.getIp() + " : " + sendCredentials.getPort());
                 socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                         InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
@@ -145,7 +165,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     public void searchOk(SearchResponse searchResponse, Credential receiverCredentials) {
         String msg = searchResponse.getMessageAsString(Constant.commandConstants.get("SEARCHOK"));
         try {
-            System.out.println("Search OK response is send to -" + receiverCredentials.getIp() + " - "
+            Node.logMessage("Search OK response is send to -" + receiverCredentials.getIp() + " - "
                     + receiverCredentials.getPort());
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
@@ -174,13 +194,13 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         } else if (response instanceof RegisterResponse) {
             RegisterResponse registerResponse = (RegisterResponse) response;
             if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_ALREADY_REGISTERED")) {
-                System.out.println("Already registered at Bootstrap with same username");
+                Node.logMessage("Already registered at Bootstrap with same username");
                 Credential credential = node.getCredential();
                 credential.setUsername(UUID.randomUUID().toString());
                 node.setCredential(credential);
                 nodeRegistrar.register();
             } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_DUPLICATE_IP")) {
-                System.out.println("Already registered at Bootstrap with same port");
+                Node.logMessage("Already registered at Bootstrap with same port");
                 Credential credential = node.getCredential();
                 credential.setPort(credential.getPort() + 1);
                 node.setCredential(credential);
@@ -188,17 +208,18 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_CANNOT_REGISTER")) {
                 System.out.printf("Can’t register. Bootstrap server full. Try again later");
             } else if (registerResponse.getNoOfNodes() == Constant.codeConstants.get("ERROR_COMMAND")) {
-                System.out.println("Error in command");
+                Node.logMessage("Error in command");
             } else {
                 List<Credential> credentialList = registerResponse.getCredentials();
                 ArrayList<Credential> routingTable = new ArrayList();
                 for (Credential credential : credentialList) {
-                    routingTable.add(credential);
+                    //routingTable.add(credential);
+                    this.join(credential);
                 }
-                printRoutingTable(routingTable);
+
                 // TODO: check whether the received nodes are alive before adding to routing
                 // table
-                this.node.setRoutingTable(routingTable);
+                //this.node.setRoutingTable(routingTable);
                 this.nodeRegistrar.setRegOK(true);
 
                 this.node.setCacheTable(new Hashtable<>());
@@ -214,13 +235,15 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         } else if (response instanceof SearchRequest) {
             SearchRequest searchRequest = (SearchRequest) response;
             triggerSearchRequest(searchRequest);
+            received++;
 
         } else if (response instanceof SearchResponse) {
             SearchResponse searchResponse = (SearchResponse) response;
+            received++;
             if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_NODE_UNREACHABLE")) {
-                System.out.println("Failure due to node unreachable");
+                Node.logMessage("Failure due to node unreachable");
             } else if (searchResponse.getNoOfFiles() == Constant.codeConstants.get("ERROR_OTHER")) {
-                System.out.println("Some other error");
+                Node.logMessage("Some other error");
             } else {
                 Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
                 Credential owner = searchResponse.getCredential();
@@ -239,44 +262,52 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                 if ((boolean) (this.getNode().getQueryRoutingRecord(searchResponse.getSequenceNo()) != null)) {
                     Credential queryFrom = this.getNode().removeQueryRecordFromRouting(searchResponse.getSequenceNo());
                     searchResponse.setSenderCredentials(node.getCredential());
-                    System.out.println("Query routing table record is deleted========>");
+                    Node.logMessage("Query routing table record is deleted========>");
                     searchOk(searchResponse, queryFrom);
+                    backward++;
                 } else if (node.getSearchQueryByID(searchResponse.getSequenceNo()) != null) {
+                    long finish = System.currentTimeMillis();
+                    long timeElapsed = finish - this.timeRecorder.get(searchResponse.getSequenceNo());
+                    Node.logMessage("Query latency : " + node.getSearchQueryByID(searchResponse.getSequenceNo()).getFileName()
+                            + " : " + timeElapsed + " ms" + " | Hop count :" + searchResponse.getHops());
                     synchronized (node.getSuccessQueryIDs()) {
                         node.addSuccessQuery(searchResponse.getSequenceNo());
                     }
                     synchronized (node.getQueryDetailsTable()) {
                         node.removeSearchQuery(searchResponse.getSequenceNo());
                     }
-                    System.out.println("--------------------------------------------------------");
-                    System.out.println(searchResponse.toString());
-                    System.out.println("--------------------------------------------------------");
+                    Node.logMessage("--------------------------------------------------------");
+                    Node.logMessage(searchResponse.toString());
+
+                    Node.logMessage("--------------------------------------------------------");
                 } else {
-                    System.out.println("File already recieved or time is expired.");
+                    Node.logMessage("File already recieved or time is expired.");
                 }
             }
 
         } else if (response instanceof JoinRequest) {
-            joinOk(node.getCredential());
+            joinOk(((JoinRequest) response).getCredential());
 
         } else if (response instanceof JoinResponse) {
             JoinResponse joinResponse = (JoinResponse) response;
             List<Credential> routingTable = node.getRoutingTable();
             routingTable.add(joinResponse.getSenderCredential());
             node.setRoutingTable(routingTable);
+            printRoutingTable(routingTable);
 
         } else if (response instanceof LeaveRequest) {
             LeaveRequest leaveRequest = (LeaveRequest) response;
             List<Credential> routingTable = node.getRoutingTable();
             routingTable.remove(leaveRequest.getCredential());
             node.setRoutingTable(routingTable);
+            printRoutingTable(node.getRoutingTable());
 
         } else if (response instanceof LeaveResponse) {
             // Nothing to do here
 
         } else if (response instanceof ErrorResponse) {
             ErrorResponse errorResponse = (ErrorResponse) response;
-            System.out.println(errorResponse.toString());
+            Node.logMessage(errorResponse.toString());
         }
     }
 
@@ -297,7 +328,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(request.getSenderCredentials().getIp()),
                     request.getSenderCredentials().getPort()));
-            System.out.println("Pong message sent");
+            //Node.logMessage("Pong message sent");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -312,13 +343,13 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
     @Override
     public void printRoutingTable(List<Credential> routingTable) {
-        System.out.println("Routing table updated as :");
-        System.out.println("--------------------------------------------------------");
-        System.out.println("IP \t \t \t PORT");
+
+        Node.logMessage("----------------Routing Table--------------------------");
+        Node.logMessage("IP \t \t \t PORT");
         for (Credential credential : routingTable) {
-            System.out.println(credential.getIp() + "\t" + credential.getPort());
+            Node.logMessage(credential.getIp() + "\t" + credential.getPort());
         }
-        System.out.println("--------------------------------------------------------");
+        Node.logMessage("--------------------------------------------------------");
     }
 
     @Override
@@ -342,52 +373,69 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     }
 
     public void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable) {
-        System.out.println("Cache table updated as :");
-        System.out.println("--------------------------------------------------------");
-        System.out.println("IP \t \t \t PORT");
+        Node.logMessage("Cache table updated as :");
+        Node.logMessage("--------------------------------------------------------");
+        Node.logMessage("IP \t \t \t PORT");
         Enumeration keys = cacheTable.keys();
         while ((keys.hasMoreElements())) {
             Credential node = (Credential) keys.nextElement();
-            System.out.println(node.getIp() + "\t \t \t" + node.getPort() + " ===> "
+            Node.logMessage(node.getIp() + "\t \t \t" + node.getPort() + " ===> "
                     + Arrays.toString(cacheTable.get(node).toArray()));
         }
-        System.out.println("--------------------------------------------------------");
+        Node.logMessage("--------------------------------------------------------");
     }
 
     @Override
     public void triggerSearchRequest(SearchRequest searchRequest) {
-        System.out.println("Triggered search request for " + searchRequest.getFileName());
+
+
+        if (searchRequest.getTriggeredCredentials().getIp() == this.node.getCredential().getIp()
+                && searchRequest.getTriggeredCredentials().getPort() == this.node.getCredential().getPort() && searchRequest.getHops() == 0) {
+            this.timeRecorder.put(searchRequest.getSearchQueryID(), System.currentTimeMillis());
+            Node.logMessage("Triggered my search request for " + searchRequest.getFileName());
+        }else {
+            Node.logMessage("Triggered search request for " + searchRequest.getFileName());
+        }
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
-            System.out.println("File " + searchRequest.getFileName() + " is available at "
+            Node.logMessage("File " + searchRequest.getFileName() + " is available at "
                     + node.getCredential().getIp() + " : " + node.getCredential().getPort());
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(),
                     node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp()
                     && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
-                System.out.println(searchResponse.toString());
+                //Node.logMessage(searchResponse.toString());
+                //long finish = System.currentTimeMillis();
+                //long timeElapsed = finish - this.timeRecorder.get(searchResponse.getSequenceNo());
+                //Node.logMessage("Query latency : " + searchRequest.getFileName() + " : " + timeElapsed + " ms");
             } else {
+                answered++;
                 searchOk(searchResponse, searchRequest.getSenderCredentials());
             }
         } else {
-            System.out.println("File is not available in the node itself" + node.getCredential().getIp() + " : "
+            Node.logMessage("File is not available in the node itself" + node.getCredential().getIp() + " : "
                     + node.getCredential().getPort());
             Hashtable<Credential, List<String>> cacheResult = checkFilesInCache(searchRequest.getFileName(),
                     this.node.getCacheTable());
             if (!cacheResult.isEmpty()) {
-                System.out.println("File is available in the cache" + node.getCredential().getIp() + " : "
+                Node.logMessage("File is available in the cache" + node.getCredential().getIp() + " : "
                         + node.getCredential().getPort());
                 Credential fileOwner = cacheResult.keys().nextElement();
                 List<String> fileList = cacheResult.get(fileOwner);
                 SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), fileList.size(),
                         fileOwner, searchRequest.getHops(), fileList, node.getCredential());
                 searchOk(searchResponse, searchRequest.getSenderCredentials());
+                answered++;
             } else {
-                System.out.println("File is not available in the cache" + node.getCredential().getIp() + " : "
+                Node.logMessage("File is not available in the cache" + node.getCredential().getIp() + " : "
                         + node.getCredential().getPort());
                 searchRequest.setHops(searchRequest.incHops());
-                if (node.getRoutingTable().size() > 0) {
+                if (node.getRoutingTable().size() > 0 && searchRequest.getHops() < Constant.codeConstants.get("MAX_HOP")) {
+
                     for (Credential credential : node.getRoutingTable()) {
+                        if(searchRequest.getHops() <= 1){
+                            forwarded++;
+                        }
                         if (searchRequest.getTriggeredCredentials().getIp() != credential.getIp()
                                 && searchRequest.getTriggeredCredentials().getPort() != credential.getPort()) {
                             search(searchRequest, credential);
@@ -401,12 +449,19 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void update(Observable o, Object arg) {
         SearchRequest sr = (SearchRequest) arg;
-        System.out.println("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
+        Node.logMessage("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
         node.removeSearchQuery(sr.getSearchQueryID());
         if (sr.getRetriedCount() < 2) {
             sr.incrementExpiredTime();
             sr.incrementRetriedCount();
             triggerSearchRequest(sr);
         }
+    }
+
+    public void printMessageStats(){
+        Node.logMessage("Received : " + received);
+        Node.logMessage("Forward : " + forwarded);
+        Node.logMessage("Backward : " + backward);
+        Node.logMessage("Answered : " + answered);
     }
 }

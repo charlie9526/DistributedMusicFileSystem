@@ -6,6 +6,7 @@ import ds.communication.request.*;
 import ds.communication.response.*;
 import ds.constant.Constant;
 import ds.credential.Credential;
+import ds.node.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Parser {
 
     public static Message parse(String message, Credential senderCredential) {
 
-        System.out.println("\nMessage received : " + message);
+        Node.logMessage("\nMessage received : " + message);
         StringTokenizer st = new StringTokenizer(message, " ");
 
         String length = st.nextToken();

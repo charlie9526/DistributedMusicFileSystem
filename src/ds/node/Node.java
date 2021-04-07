@@ -6,8 +6,12 @@ import ds.credential.Credential;
 import ds.downloadAPI.HttpResthandler;
 import ds.history.StatRecord;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.DatagramSocket;
 import java.util.*;
+import java.util.logging.*;
+import java.util.logging.Formatter;
 
 public class Node {
 
@@ -22,7 +26,7 @@ public class Node {
     private Hashtable<Credential, HashSet<String>> cacheTable;
     private DatagramSocket pingSocket;
     private HttpResthandler restAPI ;
-
+    private static  Logger logger;
 
     public Node(DatagramSocket socket, Credential credential, List<String> fileList,DatagramSocket pingSocket) {
         this.socket = socket;
@@ -36,11 +40,30 @@ public class Node {
         this.successQueryIDs = new ArrayList<String>();
     }
 
+
     public Boolean checkSuccessQuery(String query) {
         if (this.successQueryIDs.contains(query)) {
             return true;
         }
         return false;
+    }
+
+    public static void createFile(int port)  {
+        FileHandler handler = null;
+        try {
+            handler = new FileHandler("./"+new Integer(port).toString()+".log", true);
+            logger = Logger.getLogger("ds.hunky.log");
+            logger.addHandler(handler);
+
+            handler.setFormatter(new MyCustomFormatter());
+            logger.info("custom formatter - info message");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static synchronized void logMessage(String message){
+        Node.logger.info(message);
     }
 
     public HttpResthandler getRestAPI() {
@@ -133,11 +156,23 @@ public class Node {
 
     public void removeSearchQuery(String searchQueryID) {
         this.queryDetailsTable.remove(searchQueryID);
-        System.out.println("Search Query " + searchQueryID + " is removed from Query Detasils table !\n");
+        logMessage("Search Query " + searchQueryID + " is removed from Query Detasils table !\n");
     }
 
     public SearchRequest getSearchQueryByID(String ID) {
         return this.queryDetailsTable.get(ID);
+    }
+
+    private static class MyCustomFormatter extends Formatter {
+
+        @Override
+        public String format(LogRecord record) {
+            StringBuffer sb = new StringBuffer();
+            sb.append(record.getMessage());
+            sb.append("\n");
+            return sb.toString();
+        }
+
     }
 
 }

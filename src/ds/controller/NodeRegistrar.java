@@ -14,13 +14,14 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class NodeRegistrar {
 
     private Node node;
     private Credential bootstrapServerCredential;
     private Boolean regOK = false;
-
+    
     public NodeRegistrar(Credential bootstrapServerCredential, Credential nodeCredential,int pingPort) {
         DatagramSocket socket = null;
         DatagramSocket pingSocket=null;
@@ -79,7 +80,7 @@ public class NodeRegistrar {
         fileList.add("Adventures_of_Tintin");
         fileList.add("Jack_and_Jill");
         fileList.add("Glee");
-        fileList.add("The_Vampire Diarie");
+        fileList.add("The_Vampire_Diarie");
         fileList.add("King_Arthur");
         fileList.add("Windows_XP");
         fileList.add("Harry_Potter");
@@ -98,7 +99,7 @@ public class NodeRegistrar {
         fileList.add("Hacking_for_Dummies");
         Collections.shuffle(fileList);
         List<String> subFileList = fileList.subList(0, 5);
-        System.out.println("File List : " + Arrays.toString(subFileList.toArray()));
+        Node.logMessage("File List : " + Arrays.toString(subFileList.toArray()));
         return subFileList;
     }
 

@@ -37,7 +37,7 @@ public class Watchman implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(60000);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
@@ -54,9 +54,9 @@ public class Watchman implements Runnable {
                     DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                     try {
                         node.getPingSocket().receive(datagramPacket);
-                        System.out.println("Pong message recieved" + checkingNode[0] + checkingNode[1]);
+                        //System.out.println("Pong message recieved" + checkingNode[0] + checkingNode[1]);
                     } catch (IOException e) {
-                        System.out.println("Pong message not recieved" + checkingNode[0] + checkingNode[1]);
+                        //System.out.println("Pong message not recieved" + checkingNode[0] + checkingNode[1]);
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class Watchman implements Runnable {
         try {
             node.getPingSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(ip), Integer.parseInt(port)));
-            System.out.println("\nPing Message Sent");
+            //System.out.println("\nPing Message Sent");
         } catch (IOException e) {
             e.printStackTrace();
         }

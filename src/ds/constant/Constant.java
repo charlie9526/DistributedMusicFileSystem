@@ -28,6 +28,7 @@ public class Constant {
         codeConstants.put("ERROR_COMMAND",9999);
         codeConstants.put("ERROR_NODE_UNREACHABLE",9999);
         codeConstants.put("ERROR_OTHER",9998);
+        codeConstants.put("MAX_HOP", 10);
 
         commandConstants.put("REG","REG");
         commandConstants.put("REGOK","REGOK");
