@@ -28,7 +28,7 @@ public class NodeRegistrar {
         try {
             socket = new DatagramSocket(nodeCredential.getPort());
             pingSocket=new DatagramSocket(pingPort);
-            pingSocket.setSoTimeout(Constant.portConstants.get("PING_TIMEOUT"));
+            pingSocket.setSoTimeout(Constant.serverPortConstants.get("PING_TIMEOUT"));
         } catch (SocketException e) {
             e.printStackTrace();
         }finally {
@@ -47,7 +47,7 @@ public class NodeRegistrar {
 
     public void register() {
         RegisterRequest registerRequest = new RegisterRequest(node.getCredential());
-        String msg = registerRequest.getMessageAsString(Constant.commandConstants.get("REG"));
+        String msg = registerRequest.getMessageAsString(Constant.protocolConstants.get("REG"));
         try {
             this.getNode().getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));
@@ -58,7 +58,7 @@ public class NodeRegistrar {
 
     public void unRegister() {
         UnregisterRequest unregisterRequest = new UnregisterRequest(node.getCredential());
-        String msg = unregisterRequest.getMessageAsString(Constant.commandConstants.get("UNREG"));
+        String msg = unregisterRequest.getMessageAsString(Constant.protocolConstants.get("UNREG"));
         try {
             this.getNode().getSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(bootstrapServerCredential.getIp()), bootstrapServerCredential.getPort()));

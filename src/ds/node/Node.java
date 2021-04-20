@@ -51,8 +51,15 @@ public class Node {
     public static void createFile(int port)  {
         FileHandler handler = null;
         try {
+
             handler = new FileHandler("./"+new Integer(port).toString()+".log", true);
             logger = Logger.getLogger("ds.hunky.log");
+
+            Handler[] handlers = logger.getParent().getHandlers();
+            for(int i=0; i < handlers.length;i++){
+                handlers[i].setFormatter(new MyCustomFormatter());
+            }
+
             logger.addHandler(handler);
 
             handler.setFormatter(new MyCustomFormatter());
@@ -111,10 +118,18 @@ public class Node {
     }
 
     public Credential removeQueryRecordFromRouting(String queryId) {
+        logMessage("Removed "+queryId+" from query roting table .");
         return this.queryRoutingTable.remove(queryId);
     }
 
     public Credential getQueryRoutingRecord(String queryId) {
+        /*Set<String> strings = this.queryRoutingTable.keySet();
+        /Node.logMessage("============== Printing Query Routing Table==========");
+        for(String key: strings){
+            Node.logMessage(key);
+        }
+        Node.logMessage("=====================================");
+        */
         return this.queryRoutingTable.get(queryId);
     }
 
@@ -160,6 +175,14 @@ public class Node {
     }
 
     public SearchRequest getSearchQueryByID(String ID) {
+        /*
+        Node.logMessage("============== Printing Query Details Table==========");
+        Set<String> strings = this.queryDetailsTable.keySet();
+        for(String key: strings){
+            Node.logMessage(key);
+        }
+        Node.logMessage("============================");
+        */
         return this.queryDetailsTable.get(ID);
     }
 

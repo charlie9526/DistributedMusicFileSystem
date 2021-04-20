@@ -66,7 +66,7 @@ public class Watchman implements Runnable {
 
     public void sendPingRequest(String ip, String port) {
         PingRequest ping = new PingRequest();
-        String msg = ping.getMessageAsString(Constant.commandConstants.get("PING"));
+        String msg = ping.getMessageAsString(Constant.protocolConstants.get("PING"));
         try {
             node.getPingSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(ip), Integer.parseInt(port)));

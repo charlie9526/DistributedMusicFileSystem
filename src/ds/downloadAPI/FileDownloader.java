@@ -19,7 +19,7 @@ public class FileDownloader {
     public void downloadFile(String fileName, Credential toCred) throws IOException {
         
         
-        URL obj = new URL(toCred.getIp() + ":" + toCred.getIp() + "?filename=" + fileName);
+        URL obj = new URL("http://"+toCred.getIp() + ":" + toCred.getPort() + "/download?filename=" + fileName);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
         int responseCode = con.getResponseCode();
@@ -42,7 +42,7 @@ public class FileDownloader {
             byte[] hash = digest.digest(response.toString().getBytes(StandardCharsets.UTF_8));
             BigInteger noHash = new BigInteger(1, hash);
             String hashStr = noHash.toString(16);
-            Node.logMessage("The hash recieved is - " + hashStr.toString());
+            Node.logMessage("The file received is - " + fileName + " : hash - " + hashStr.toString());
         } else {
             Node.logMessage("GET request not worked");
         }
