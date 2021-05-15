@@ -28,12 +28,23 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     private int forwarded;
     private int answered;
     private int backward;
+    private int successCount;
+    private int downloadErrorCount;
 
     public NodeOperator(Credential nodeCredential, NodeRegistrar nodeRegistrar) {
         this.nodeRegistrar = nodeRegistrar;
         this.node = nodeRegistrar.getNode();
         this.timeRecorder = new Hashtable<>();
         this.start();
+    }
+
+    public void resetCounter(){
+        this.received = 0;
+        this.forwarded = 0;
+        this.answered = 0;
+        this.backward = 0;
+        this.successCount = 0;
+        downloadErrorCount = 0;
     }
 
     public Node getNode() {
@@ -284,6 +295,8 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                     Node.logMessage(searchResponse.toString());
 
                     Node.logMessage("--------------------------------------------------------");
+                    successCount++;
+
                     download(searchResponse);
                 } else {
                     Node.logMessage("File already received or time is expired.");
@@ -306,6 +319,12 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             routingTable.remove(leaveRequest.getCredential());
             node.setRoutingTable(routingTable);
             printRoutingTable(node.getRoutingTable());
+
+            //Remove the leave node from cache table
+            //Remove cache table entry
+            //Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
+            //cacheTable.remove(leaveRequest.getCredential());
+            //this.node.setCacheTable(cacheTable);
 
         } else if (response instanceof LeaveResponse) {
             // Nothing to do here
@@ -411,11 +430,13 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         if (!searchResult.isEmpty()) {
             Node.logMessage("File " + searchRequest.getFileName() + " is available at "
                     + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(),
                     node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp()
                     && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
                 Node.logMessage("File " + searchRequest.getFileName() + " is available on me.");
+                successCount++;
             } else {
                 answered++;
                 searchOk(searchResponse, searchRequest.getSenderCredentials());
@@ -428,6 +449,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             if (!cacheResult.isEmpty()) {
                 Node.logMessage("File is available in the cache " + node.getCredential().getIp() + " : "
                         + node.getCredential().getPort());
+
                 Credential fileOwner = cacheResult.keys().nextElement();
                 List<String> fileList = cacheResult.get(fileOwner);
                 SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), fileList.size(),
@@ -435,6 +457,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
                 if(searchRequest.getTriggeredCredentials().getIp() == this.node.getCredential().getIp() &&
                         searchRequest.getTriggeredCredentials().getPort() == this.node.getCredential().getPort()){
+                    successCount++;
                     download(searchResponse);
                 }else {
                     searchOk(searchResponse, searchRequest.getSenderCredentials());
@@ -482,5 +505,6 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         Node.logMessage("Forward : " + forwarded);
         Node.logMessage("Backward : " + backward);
         Node.logMessage("Answered : " + answered);
+        Node.logMessage("Success count : " + successCount);
     }
 }

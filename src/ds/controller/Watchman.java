@@ -37,7 +37,7 @@ public class Watchman implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep(60000);
+                Thread.sleep(600000);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
@@ -54,9 +54,19 @@ public class Watchman implements Runnable {
                     DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                     try {
                         node.getPingSocket().receive(datagramPacket);
-                        //System.out.println("Pong message recieved" + checkingNode[0] + checkingNode[1]);
+                        System.out.println("Pong message received " + checkingNode[0] +" : " + checkingNode[1]);
                     } catch (IOException e) {
-                        //System.out.println("Pong message not recieved" + checkingNode[0] + checkingNode[1]);
+                        System.out.println("Pong message not received " + checkingNode[0] + " : " + checkingNode[1]);
+                        List<Credential> routingTable = this.node.getRoutingTable();
+                        Credential lostNode = new Credential(checkingNode[0], Integer.parseInt(checkingNode[1]), "");
+                        routingTable.remove(lostNode);
+                        this.node.setRoutingTable(routingTable);
+
+                        //Remove cache table entry
+                        //Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
+                        //cacheTable.remove(lostNode);
+                        //this.node.setCacheTable(cacheTable);
+
                     }
                 }
             }

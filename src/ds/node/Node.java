@@ -63,7 +63,7 @@ public class Node {
             logger.addHandler(handler);
 
             handler.setFormatter(new MyCustomFormatter());
-            logger.info("custom formatter - info message");
+            logger.warning("custom formatter - info message");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -151,6 +151,7 @@ public class Node {
 
     public void setRoutingTable(List<Credential> routingTable) {
         this.routingTable = routingTable;
+        printRoutingTable(this.routingTable);
     }
 
     public List<StatRecord> getStatTable() {
@@ -196,6 +197,16 @@ public class Node {
             return sb.toString();
         }
 
+    }
+
+    public void printRoutingTable(List<Credential> routingTable) {
+
+        Node.logMessage("----------------Routing Table--------------------------");
+        Node.logMessage("IP \t \t \t PORT");
+        for (Credential credential : routingTable) {
+            Node.logMessage(credential.getIp() + "\t" + credential.getPort());
+        }
+        Node.logMessage("--------------------------------------------------------");
     }
 
 }

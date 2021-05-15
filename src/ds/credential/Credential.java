@@ -44,4 +44,6 @@ public class Credential {
     public int hashCode(){
         return (this.ip + new Integer(this.port).toString()).hashCode();
     }
+
+
 }
