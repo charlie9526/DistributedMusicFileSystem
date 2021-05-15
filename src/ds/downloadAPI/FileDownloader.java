@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigInteger;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -17,14 +18,15 @@ import java.util.logging.Logger;
 public class FileDownloader {
 
     public void downloadFile(String fileName, Credential toCred) throws IOException {
-        
-        
+
         URL obj = new URL("http://"+toCred.getIp() + ":" + toCred.getPort() + "/download?filename=" + fileName);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("GET");
-        int responseCode = con.getResponseCode();
-        Node.logMessage("GET Response Code :: " + responseCode);
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        try {
+            int responseCode = con.getResponseCode();
+
+            //Node.logMessage("GET Response Code :: " + responseCode, "ANSI_YELLOW");
+            if (responseCode == HttpURLConnection.HTTP_OK) {
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
             StringBuffer response = new StringBuffer();
@@ -42,9 +44,12 @@ public class FileDownloader {
             byte[] hash = digest.digest(response.toString().getBytes(StandardCharsets.UTF_8));
             BigInteger noHash = new BigInteger(1, hash);
             String hashStr = noHash.toString(16);
-            Node.logMessage("The file received is - " + fileName + " : hash - " + hashStr.toString());
+            Node.logMessage("The file received is - " + fileName + " : hash - " + hashStr.toString(), "ANSI_BLUE");
         } else {
-            Node.logMessage("GET request not worked");
+            Node.logMessage("GET request not worked", "ANSI_RED");
+        }
+        }catch(ConnectException exception){
+            Node.logMessage("Connection error | " +toCred.getIp() + ":" + toCred.getPort() , "ANSI_RED");
         }
     }
 }

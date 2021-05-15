@@ -37,7 +37,7 @@ public class Watchman implements Runnable {
     public void run() {
         while (true) {
             try {
-                Thread.sleep(600000);
+                Thread.sleep(20000);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
@@ -54,14 +54,14 @@ public class Watchman implements Runnable {
                     DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
                     try {
                         node.getPingSocket().receive(datagramPacket);
-                        System.out.println("Pong message received " + checkingNode[0] +" : " + checkingNode[1]);
+                       Node.logMessage("Pong message received " + checkingNode[0] +" : " + checkingNode[1], "BOLD_BLACK");
                     } catch (IOException e) {
-                        System.out.println("Pong message not received " + checkingNode[0] + " : " + checkingNode[1]);
+                        Node.logMessage("\nPong message not received " + checkingNode[0] + " : " + checkingNode[1], "BOLD_RED");
                         List<Credential> routingTable = this.node.getRoutingTable();
                         Credential lostNode = new Credential(checkingNode[0], Integer.parseInt(checkingNode[1]), "");
                         routingTable.remove(lostNode);
                         this.node.setRoutingTable(routingTable);
-
+                        this.node.printRoutingTable(routingTable);
                         //Remove cache table entry
                         //Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
                         //cacheTable.remove(lostNode);
@@ -80,7 +80,7 @@ public class Watchman implements Runnable {
         try {
             node.getPingSocket().send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(ip), Integer.parseInt(port)));
-            //System.out.println("\nPing Message Sent");
+            Node.logMessage("\nPing Message Sent " + ip + " : " + port, "BOLD_BLACK");
         } catch (IOException e) {
             e.printStackTrace();
         }

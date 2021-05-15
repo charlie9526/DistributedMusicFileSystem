@@ -81,54 +81,91 @@ public class DSProgramme {
             searchQueries = searchQueries_1.subList(0, searchQueries_1.size());
             //Collections.shuffle(searchQueries);
 
-            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<"+ searchQueries.size()+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<Enter your command>>>>>>>>>>>>>>>>>>>>>>>");
-            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            //Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<"+ searchQueries.size()+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE" );
+            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<Enter Your Mode>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
+            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
             Scanner sc = new Scanner(System.in);
-
 
             String input = sc.next();
 
-            if (input.equals("start")) {
+            if (input.equals("auto")) {
+                autoMode(nodeOperator, searchQueries);
+            } else if(input.equals("manual")){
+                manualMode(nodeOperator);
+            }
+        }
+    }
+
+    public static void manualMode(NodeOperator nodeOperator){
+        while(true) {
+            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<Enter Your File Name>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
+            Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
+            Scanner sc = new Scanner(System.in);
+
+            String fileName = sc.next();
+
+            Node.logMessage("", "ANSI_WHITE");
+            String uuid = UUID.randomUUID().toString() + "-" + nodeOperator.getNode().getCredential().getUsername();
+            SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), fileName, 0,
+                    nodeOperator.getNode().getCredential());
+
+            nodeOperator.triggerSearchRequest(searchRequest);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public static void autoMode(NodeOperator nodeOperator,  List<String> searchQueries){
+
+        Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<Enter your command>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
+        Node.logMessage("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "ANSI_WHITE");
+        Scanner sc = new Scanner(System.in);
+
+        String input = sc.next();
+
+        if (input.equals("start")) {
 
 
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                if (nodeOperator.getNodeRegistrar().isRegOK()) {
-                    for (int i = 0; i < searchQueries.size(); i++) {
-                        Node.logMessage("");
-                        //                    System.out.println(searchQueries.get(i));
-                        String uuid = UUID.randomUUID().toString() + "-" + nodeOperator.getNode().getCredential().getUsername();
-                        SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), searchQueries.get(i), 0, nodeOperator.getNode().getCredential());
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (nodeOperator.getNodeRegistrar().isRegOK()) {
+                for (int i = 0; i < searchQueries.size(); i++) {
+                    Node.logMessage("", "ANSI_WHITE");
+                    //                    System.out.println(searchQueries.get(i));
+                    String uuid = UUID.randomUUID().toString() + "-" + nodeOperator.getNode().getCredential().getUsername();
+                    SearchRequest searchRequest = new SearchRequest(uuid, nodeOperator.getNode().getCredential(), searchQueries.get(i), 0, nodeOperator.getNode().getCredential());
 
 
-                        //long start = System.currentTimeMillis();
-                        nodeOperator.triggerSearchRequest(searchRequest);
-                        //long finish = System.currentTimeMillis();
-                        //long timeElapsed = finish - start;
-                        //System.out.println("Query latency : " + searchQueries.get(i) + " : " + timeElapsed + " ms");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    //long start = System.currentTimeMillis();
+                    nodeOperator.triggerSearchRequest(searchRequest);
+                    //long finish = System.currentTimeMillis();
+                    //long timeElapsed = finish - start;
+                    //System.out.println("Query latency : " + searchQueries.get(i) + " : " + timeElapsed + " ms");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-
-            } else if (input.equals("leave")) {
-                List<Credential> routingTable = nodeOperator.getNode().getRoutingTable();
-                for (int i = 0; i < routingTable.size(); i++) {
-                    nodeOperator.leave(routingTable.get(i));
-                }
-                System.exit(0);
-
-            } else if (input.equals("print")) {
-                nodeOperator.printMessageStats();
-                nodeOperator.resetCounter();
             }
+
+        } else if (input.equals("leave")) {
+            List<Credential> routingTable = nodeOperator.getNode().getRoutingTable();
+            for (int i = 0; i < routingTable.size(); i++) {
+                nodeOperator.leave(routingTable.get(i));
+            }
+            System.exit(0);
+
+        } else if (input.equals("print")) {
+            nodeOperator.printMessageStats();
+            nodeOperator.resetCounter();
         }
     }
 

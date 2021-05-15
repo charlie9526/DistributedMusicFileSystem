@@ -26,7 +26,7 @@ public class SearchRequest extends Message {
         this.senderCredentials = senderCredentials;
         this.manufacturedTime = new Timestamp(System.currentTimeMillis());
 //        System.out.println(sdf.format(this.manufacturedTime));
-        this.expiredTime = new Timestamp(this.manufacturedTime.getTime() + 600000);
+        this.expiredTime = new Timestamp(this.manufacturedTime.getTime() + 30000);
 //        System.out.println(sdf.format(this.expiredTime));
         this.retriedCount = 0;
     }

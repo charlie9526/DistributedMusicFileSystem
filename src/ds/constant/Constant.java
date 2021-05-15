@@ -9,7 +9,7 @@ public class Constant {
     public final static HashMap<String,Integer> serverPortConstants = new HashMap<String, Integer>();
     public final static HashMap<String,String> protocolConstants = new HashMap<String, String>();
     public final static HashMap<String,Integer> errorCodeConstants = new HashMap<String, Integer>();
-
+    public  final static HashMap<String, String> logColorConstants = new HashMap<>();
     static {
         usernameConstants.put("USERNAME_BOOTSTRAP_SERVER","Bootstrap");
         IPConstants.put("IP_BOOTSTRAP_SERVER","127.0.0.1");
@@ -43,5 +43,19 @@ public class Constant {
         protocolConstants.put("ERROR","ERROR");
         protocolConstants.put("PING","PING");
         protocolConstants.put("PONG","PONG");
+
+        logColorConstants.put( "ANSI_BLACK", "\u001B[30m");
+        logColorConstants.put( "BOLD_PURPLE", "\033[1;35m");
+        logColorConstants.put( "ANSI_PURPLE", "\u001B[35m");
+        logColorConstants.put( "ANSI_GREEN", "\u001B[32m");
+        logColorConstants.put( "ANSI_BLUE", "\u001B[34m");
+        logColorConstants.put( "ANSI_YELLOW", "\u001B[33m");
+        logColorConstants.put( "ANSI_RED", "\u001B[31m");
+        logColorConstants.put( "ANSI_WHITE", "\u001B[37m");
+        logColorConstants.put( "ANSI_RESET", "\u001B[0m");
+        logColorConstants.put("BOLD_BLACK", "\033[1;30m");
+        logColorConstants.put("BOLD_RED", "\033[1;31m");
+
+
     }
 }

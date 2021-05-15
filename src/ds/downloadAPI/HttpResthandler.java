@@ -31,7 +31,7 @@ public class HttpResthandler implements HttpHandler {
     @Override
     public void handle(HttpExchange t) throws IOException {
         String prop = queryToMap(t.getRequestURI().getQuery());
-        Node.logMessage("Attr is - " + prop);
+        //Node.logMessage("Attr is - " + prop);
         String response = getResponseContent();
         t.sendResponseHeaders(200, response.length());
         OutputStream os = t.getResponseBody();
@@ -57,7 +57,7 @@ public class HttpResthandler implements HttpHandler {
         byte[] hash = digest.digest(str.getBytes(StandardCharsets.UTF_8));
         BigInteger noHash = new BigInteger(1, hash);
         String hashStr = noHash.toString(16);
-        Node.logMessage("The hash sent is - " + hashStr.toString());
+        Node.logMessage("\nThe hash sent is - " + hashStr.toString(), "ANSI_GREEN");
         return str;
     }
 

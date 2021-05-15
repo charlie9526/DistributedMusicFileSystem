@@ -58,7 +58,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void run() {
         Node.logMessage("Server " + this.node.getCredential().getUsername() + " created at "
-                + this.node.getCredential().getPort() + ". Waiting for incoming data...");
+                + this.node.getCredential().getPort() + ". Waiting for incoming data...", "ANSI_WHITE");
         byte buffer[];
         DatagramPacket datagramPacket;
         while (true) {
@@ -107,9 +107,8 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         }
         routingTable.add(senderCredential);
 
-        printRoutingTable(routingTable);
-
         this.node.setRoutingTable(routingTable);
+        printRoutingTable(routingTable);
 
         try {
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
@@ -160,7 +159,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         try {
             synchronized (node.getQueryDetailsTable()) {
                 Node.logMessage(
-                        "Send SER request message to " + sendCredentials.getIp() + " : " + sendCredentials.getPort());
+                        "Send SER request message to " + sendCredentials.getIp() + " : " + sendCredentials.getPort(), "ANSI_YELLOW");
                 socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                         InetAddress.getByName(sendCredentials.getIp()), sendCredentials.getPort()));
                 if ((!node.checkSuccessQuery(searchRequest.getSearchQueryID()))
@@ -181,7 +180,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         String msg = searchResponse.getMessageAsString(Constant.protocolConstants.get("SEARCHOK"));
         try {
             Node.logMessage("Search OK response is send to -" + receiverCredentials.getIp() + " - "
-                    + receiverCredentials.getPort());
+                    + receiverCredentials.getPort(), "ANSI_BLUE");
             socket.send(new DatagramPacket(msg.getBytes(), msg.getBytes().length,
                     InetAddress.getByName(receiverCredentials.getIp()), receiverCredentials.getPort()));
         } catch (IOException e) {
@@ -209,13 +208,13 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         } else if (response instanceof RegisterResponse) {
             RegisterResponse registerResponse = (RegisterResponse) response;
             if (registerResponse.getNoOfNodes() == Constant.errorCodeConstants.get("ERROR_ALREADY_REGISTERED")) {
-                Node.logMessage("Already registered at Bootstrap with same username");
+                Node.logMessage("Already registered at Bootstrap with same username", "ANSI_WHITE");
                 Credential credential = node.getCredential();
                 credential.setUsername(UUID.randomUUID().toString());
                 node.setCredential(credential);
                 nodeRegistrar.register();
             } else if (registerResponse.getNoOfNodes() == Constant.errorCodeConstants.get("ERROR_DUPLICATE_IP")) {
-                Node.logMessage("Already registered at Bootstrap with same port");
+                Node.logMessage("Already registered at Bootstrap with same port", "ANSI_WHITE");
                 Credential credential = node.getCredential();
                 credential.setPort(credential.getPort() + 1);
                 node.setCredential(credential);
@@ -223,7 +222,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             } else if (registerResponse.getNoOfNodes() == Constant.errorCodeConstants.get("ERROR_CANNOT_REGISTER")) {
                 System.out.printf("Can’t register. Bootstrap server full. Try again later");
             } else if (registerResponse.getNoOfNodes() == Constant.errorCodeConstants.get("ERROR_COMMAND")) {
-                Node.logMessage("Error in command");
+                Node.logMessage("Error in command", "ANSI_RED");
             } else {
                 List<Credential> credentialList = registerResponse.getCredentials();
                 ArrayList<Credential> routingTable = new ArrayList();
@@ -256,9 +255,9 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             SearchResponse searchResponse = (SearchResponse) response;
             received++;
             if (searchResponse.getNoOfFiles() == Constant.errorCodeConstants.get("ERROR_NODE_UNREACHABLE")) {
-                Node.logMessage("Failure due to node unreachable");
+                Node.logMessage("Failure due to node unreachable", "ANSI_RED");
             } else if (searchResponse.getNoOfFiles() == Constant.errorCodeConstants.get("ERROR_OTHER")) {
-                Node.logMessage("Some other error");
+                Node.logMessage("Some other error", "ANSI_RED");
             } else {
                 Hashtable<Credential, HashSet<String>> cacheTable = this.node.getCacheTable();
                 Credential owner = searchResponse.getCredential();
@@ -284,22 +283,22 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                     long finish = System.currentTimeMillis();
                     long timeElapsed = finish - this.timeRecorder.get(searchResponse.getSequenceNo());
                     Node.logMessage("Query latency : " + node.getSearchQueryByID(searchResponse.getSequenceNo()).getFileName()
-                            + " : " + timeElapsed + " ms" + " | Hop count :" + searchResponse.getHops());
+                            + " : " + timeElapsed + " ms" + " | Hop count :" + searchResponse.getHops(), "ANSI_WHITE");
                     synchronized (node.getSuccessQueryIDs()) {
                         node.addSuccessQuery(searchResponse.getSequenceNo());
                     }
                     synchronized (node.getQueryDetailsTable()) {
                         node.removeSearchQuery(searchResponse.getSequenceNo());
                     }
-                    Node.logMessage("--------------------------------------------------------");
-                    Node.logMessage(searchResponse.toString());
+                    Node.logMessage("--------------------------------------------------------", "ANSI_BLUE");
+                    Node.logMessage(searchResponse.toString(), "ANSI_BLUE");
 
-                    Node.logMessage("--------------------------------------------------------");
+                    Node.logMessage("--------------------------------------------------------", "ANSI_BLUE");
                     successCount++;
 
                     download(searchResponse);
                 } else {
-                    Node.logMessage("File already received or time is expired.");
+                    Node.logMessage("File already received or time is expired.", "ANSI_GREEN");
                 }
             }
 
@@ -331,7 +330,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
         } else if (response instanceof ErrorResponse) {
             ErrorResponse errorResponse = (ErrorResponse) response;
-            Node.logMessage(errorResponse.toString());
+            Node.logMessage(errorResponse.toString(), "ANSI_RED");
         }
     }
 
@@ -368,12 +367,12 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void printRoutingTable(List<Credential> routingTable) {
 
-        Node.logMessage("----------------Routing Table--------------------------");
-        Node.logMessage("IP \t \t \t PORT");
+        Node.logMessage("----------------Routing Table--------------------------", "ANSI_WHITE");
+        Node.logMessage("IP \t \t \t PORT", "ANSI_WHITE");
         for (Credential credential : routingTable) {
-            Node.logMessage(credential.getIp() + "\t" + credential.getPort());
+            Node.logMessage(credential.getIp() + "\t" + credential.getPort(), "ANSI_WHITE");
         }
-        Node.logMessage("--------------------------------------------------------");
+        Node.logMessage("--------------------------------------------------------", "ANSI_WHITE");
     }
 
     @Override
@@ -397,16 +396,16 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     }
 
     public void printCacheTable(Hashtable<Credential, HashSet<String>> cacheTable) {
-        Node.logMessage("Cache table updated as :");
-        Node.logMessage("--------------------------------------------------------");
-        Node.logMessage("IP \t \t \t PORT");
+        Node.logMessage("Cache table updated as :", "ANSI_WHITE");
+        Node.logMessage("--------------------------------------------------------", "ANSI_WHITE");
+        Node.logMessage("IP \t \t \t PORT", "ANSI_WHITE");
         Enumeration keys = cacheTable.keys();
         while ((keys.hasMoreElements())) {
             Credential node = (Credential) keys.nextElement();
             Node.logMessage(node.getIp() + "\t \t \t" + node.getPort() + " ===> "
-                    + Arrays.toString(cacheTable.get(node).toArray()));
+                    + Arrays.toString(cacheTable.get(node).toArray()), "ANSI_WHITE");
         }
-        Node.logMessage("--------------------------------------------------------");
+        Node.logMessage("--------------------------------------------------------", "ANSI_WHITE");
     }
 
     @Override
@@ -414,28 +413,30 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
         if (this.node.getSearchQueryByID(searchRequest.getSearchQueryID()) != null ||
                 this.node.getQueryRoutingRecord(searchRequest.getSearchQueryID()) != null) {
+            Node.logMessage("Same search query is received earlier | Query ID : " +
+                    searchRequest.getSearchQueryID(), "ANSI_RED");
             return;
         }
 
         if (searchRequest.getTriggeredCredentials().getIp() == this.node.getCredential().getIp()
                 && searchRequest.getTriggeredCredentials().getPort() == this.node.getCredential().getPort() && searchRequest.getHops() == 0) {
             this.timeRecorder.put(searchRequest.getSearchQueryID(), System.currentTimeMillis());
-            Node.logMessage("Triggered my search request for " + searchRequest.getFileName());
+            Node.logMessage("Triggered my search request for " + searchRequest.getFileName(), "BOLD_PURPLE");
         }else {
-            Node.logMessage("Triggered search request for " + searchRequest.getFileName());
+            Node.logMessage("Triggered search request for " + searchRequest.getFileName(), "ANSI_PURPLE");
         }
 
 
         List<String> searchResult = checkForFiles(searchRequest.getFileName(), node.getFileList());
         if (!searchResult.isEmpty()) {
             Node.logMessage("File " + searchRequest.getFileName() + " is available at "
-                    + node.getCredential().getIp() + " : " + node.getCredential().getPort());
+                    + node.getCredential().getIp() + " : " + node.getCredential().getPort(), "ANSI_BLUE");
 
             SearchResponse searchResponse = new SearchResponse(searchRequest.getSearchQueryID(), searchResult.size(),
                     node.getCredential(), searchRequest.getHops(), searchResult, node.getCredential());
             if (searchRequest.getTriggeredCredentials().getIp() == node.getCredential().getIp()
                     && searchRequest.getTriggeredCredentials().getPort() == node.getCredential().getPort()) {
-                Node.logMessage("File " + searchRequest.getFileName() + " is available on me.");
+                Node.logMessage("File " + searchRequest.getFileName() + " is available on me.", "ANSI_BLUE");
                 successCount++;
             } else {
                 answered++;
@@ -443,12 +444,12 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
             }
         } else {
             Node.logMessage("File is not available in the node itself " + node.getCredential().getIp() + " : "
-                    + node.getCredential().getPort());
+                    + node.getCredential().getPort(), "ANSI_RED");
             Hashtable<Credential, List<String>> cacheResult = checkFilesInCache(searchRequest.getFileName(),
                     this.node.getCacheTable());
             if (!cacheResult.isEmpty()) {
                 Node.logMessage("File is available in the cache " + node.getCredential().getIp() + " : "
-                        + node.getCredential().getPort());
+                        + node.getCredential().getPort(), "ANSI_GREEN");
 
                 Credential fileOwner = cacheResult.keys().nextElement();
                 List<String> fileList = cacheResult.get(fileOwner);
@@ -465,7 +466,7 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
                 answered++;
             } else {
                 Node.logMessage("File is not available in the cache" + node.getCredential().getIp() + " : "
-                        + node.getCredential().getPort());
+                        + node.getCredential().getPort(), "ANSI_RED");
                 searchRequest.setHops(searchRequest.incHops());
                 //System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>"+searchRequest.getSearchQueryID());
 
@@ -490,21 +491,29 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
     @Override
     public void update(Observable o, Object arg) {
         SearchRequest sr = (SearchRequest) arg;
-        Node.logMessage("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !");
+
+        String uuid = UUID.randomUUID().toString() + "-" + this.getNode().getCredential().getUsername();
+        SearchRequest searchRequest = new SearchRequest(uuid, this.getNode().getCredential(), sr.getFileName(), 0,
+                this.getNode().getCredential());
+
+        Node.logMessage("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !",
+                "ANSI_RED");
+
         node.removeSearchQuery(sr.getSearchQueryID());
         if (sr.getRetriedCount() < 2) {
             sr.incrementExpiredTime();
             sr.incrementRetriedCount();
             sr.setHops(0);
-            triggerSearchRequest(sr);
+            triggerSearchRequest(searchRequest);
+
         }
     }
 
     public void printMessageStats(){
-        Node.logMessage("Received : " + received);
-        Node.logMessage("Forward : " + forwarded);
-        Node.logMessage("Backward : " + backward);
-        Node.logMessage("Answered : " + answered);
-        Node.logMessage("Success count : " + successCount);
+        Node.logMessage("Received : " + received, "ANSI_WHITE");
+        Node.logMessage("Forward : " + forwarded, "ANSI_WHITE");
+        Node.logMessage("Backward : " + backward, "ANSI_WHITE");
+        Node.logMessage("Answered : " + answered, "ANSI_WHITE");
+        Node.logMessage("Success count : " + successCount, "ANSI_WHITE");
     }
 }

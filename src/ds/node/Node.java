@@ -2,6 +2,7 @@ package ds.node;
 
 import com.sun.net.httpserver.HttpServer;
 import ds.communication.request.SearchRequest;
+import ds.constant.Constant;
 import ds.credential.Credential;
 import ds.downloadAPI.HttpResthandler;
 import ds.history.StatRecord;
@@ -69,8 +70,8 @@ public class Node {
         }
     }
 
-    public static synchronized void logMessage(String message){
-        Node.logger.info(message);
+    public static synchronized void logMessage(String message, String color){
+        Node.logger.info( Constant.logColorConstants.get(color)+ message + Constant.logColorConstants.get("ANSI_RESET"));
     }
 
     public HttpResthandler getRestAPI() {
@@ -118,7 +119,7 @@ public class Node {
     }
 
     public Credential removeQueryRecordFromRouting(String queryId) {
-        logMessage("Removed "+queryId+" from query roting table .");
+        logMessage("Removed "+queryId+" from query roting table .", "ANSI_RED");
         return this.queryRoutingTable.remove(queryId);
     }
 
@@ -151,7 +152,7 @@ public class Node {
 
     public void setRoutingTable(List<Credential> routingTable) {
         this.routingTable = routingTable;
-        printRoutingTable(this.routingTable);
+        //printRoutingTable(this.routingTable);
     }
 
     public List<StatRecord> getStatTable() {
@@ -172,7 +173,7 @@ public class Node {
 
     public void removeSearchQuery(String searchQueryID) {
         this.queryDetailsTable.remove(searchQueryID);
-        logMessage("Search Query " + searchQueryID + " is removed from Query Detasils table !\n");
+        logMessage("Search Query " + searchQueryID + " is removed from Query Details table !\n", "ANSI_RED");
     }
 
     public SearchRequest getSearchQueryByID(String ID) {
@@ -201,12 +202,12 @@ public class Node {
 
     public void printRoutingTable(List<Credential> routingTable) {
 
-        Node.logMessage("----------------Routing Table--------------------------");
-        Node.logMessage("IP \t \t \t PORT");
+        Node.logMessage("----------------Routing Table--------------------------", "ANSI_WHITE");
+        Node.logMessage("IP \t \t \t PORT", "ANSI_WHITE");
         for (Credential credential : routingTable) {
-            Node.logMessage(credential.getIp() + "\t" + credential.getPort());
+            Node.logMessage(credential.getIp() + "\t" + credential.getPort(), "ANSI_WHITE");
         }
-        Node.logMessage("--------------------------------------------------------");
+        Node.logMessage("--------------------------------------------------------", "ANSI_WHITE");
     }
 
 }

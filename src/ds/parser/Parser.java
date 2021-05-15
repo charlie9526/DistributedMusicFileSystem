@@ -16,12 +16,15 @@ public class Parser {
 
     public static Message parse(String message, Credential senderCredential) {
 
-        Node.logMessage("\nMessage received : " + message);
+
         StringTokenizer st = new StringTokenizer(message, " ");
 
         String length = st.nextToken();
         String command = st.nextToken();
 
+        if(!command.equals(Constant.protocolConstants.get("PING"))){
+            Node.logMessage("\nMessage received : " + message, "ANSI_YELLOW");
+        }
         if (command.equals(Constant.protocolConstants.get("REG"))) {
             String ip = st.nextToken();
             int port = Integer.parseInt(st.nextToken());
