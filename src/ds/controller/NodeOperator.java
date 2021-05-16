@@ -360,8 +360,11 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
 
     @Override
     public List<String> checkForFiles(String fileName, List<String> fileList) {
-        Pattern pattern = Pattern.compile(fileName);
-        return fileList.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
+        String regex  = "\\b"+ fileName + "\\b";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        //pattern.asPredicate()
+
+        return fileList.stream().filter(name-> pattern.matcher(name.replace("_", " ")).find()).collect(Collectors.toList());
     }
 
     @Override
@@ -385,8 +388,10 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         while (credentialsList.hasMoreElements()) {
             Credential searchNode = (Credential) credentialsList.nextElement();
             List<String> fileList = new ArrayList<>(cacheTable.get(searchNode));
-            Pattern pattern = Pattern.compile(fileName);
-            fileList = fileList.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
+            String regex  = "\\b"+ fileName + "\\b";
+            Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+            fileList = fileList.stream().filter(name-> pattern.matcher(name.replace("_", " ")).find())
+                    .collect(Collectors.toList());
             if (!fileList.isEmpty()) {
                 searchResult.put(searchNode, fileList);
                 return searchResult;
@@ -496,16 +501,19 @@ public class NodeOperator implements NodeOperations, Runnable, Observer {
         SearchRequest searchRequest = new SearchRequest(uuid, this.getNode().getCredential(), sr.getFileName(), 0,
                 this.getNode().getCredential());
 
+        searchRequest.setRetriedCount(sr.getRetriedCount());
+        searchRequest.setManufacturedTime(sr.getManufacturedTime());
+        searchRequest.setExpiredTime(sr.getExpiredTime());
+
         Node.logMessage("\nSearch query " + sr.getSearchQueryID() + " - " + sr.getFileName() + " is expired !",
                 "ANSI_RED");
 
         node.removeSearchQuery(sr.getSearchQueryID());
         if (sr.getRetriedCount() < 2) {
-            sr.incrementExpiredTime();
-            sr.incrementRetriedCount();
+            searchRequest.incrementExpiredTime();
+            searchRequest.incrementRetriedCount();
             sr.setHops(0);
             triggerSearchRequest(searchRequest);
-
         }
     }
 

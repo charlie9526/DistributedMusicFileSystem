@@ -31,6 +31,18 @@ public class SearchRequest extends Message {
         this.retriedCount = 0;
     }
 
+    public Timestamp getManufacturedTime() {
+        return manufacturedTime;
+    }
+
+    public void setManufacturedTime(Timestamp manufacturedTime) {
+        this.manufacturedTime = manufacturedTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
+    }
+
     public Credential getSenderCredentials() {
         return senderCredentials;
     }
@@ -62,6 +74,8 @@ public class SearchRequest extends Message {
     public int getRetriedCount() {
         return retriedCount;
     }
+
+    public void setRetriedCount(int count){ this.retriedCount = count; }
 
     public void incrementRetriedCount() {
         this.retriedCount = this.retriedCount + 1;

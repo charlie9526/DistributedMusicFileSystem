@@ -99,6 +99,11 @@ public class NodeRegistrar {
         fileList.add("Hacking_for_Dummies");
         Collections.shuffle(fileList);
         List<String> subFileList = fileList.subList(0, 5);
+
+        /*for(int i=0; i < subFileList.size(); i++){
+            subFileList.set(i, subFileList.get(i).replace("_", " "));
+        }*/
+
         Node.logMessage("File List : " + Arrays.toString(subFileList.toArray()), "ANSI_WHITE");
         return subFileList;
     }
